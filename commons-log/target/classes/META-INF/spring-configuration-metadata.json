@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "name": "log.request",
+      "type": "com.xcz.member.log.config.RequestLogProperties",
+      "sourceType": "com.xcz.member.log.config.RequestLogProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "log.request.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否打印请求\/响应调试日志。 <p> 默认 {@code false}：仅生成 traceId 写入 MDC，不输出详细请求摘要。",
+      "sourceType": "com.xcz.member.log.config.RequestLogProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "log.request.max-body-length",
+      "type": "java.lang.Integer",
+      "description": "请求体 \/ 响应体日志最大长度，超出部分截断，避免超大 payload 刷屏或 OOM。",
+      "sourceType": "com.xcz.member.log.config.RequestLogProperties",
+      "defaultValue": 4096
+    }
+  ],
+  "hints": []
+}
