@@ -1,3 +1,3 @@
-com.xcz.member.security.config.SecurityCoreAutoConfiguration
-com.xcz.member.security.config.SecurityConfig
-com.xcz.member.security.config.SecurityReactConfig
+com.xcz.commons.security.config.SecurityCoreAutoConfiguration
+com.xcz.commons.security.config.SecurityConfig
+com.xcz.commons.security.config.SecurityReactConfig

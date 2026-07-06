@@ -1,2 +1,2 @@
-com.xcz.member.core.utils.SpringUtils
-com.xcz.member.core.config.DateFormatConfig
+com.xcz.commons.core.utils.SpringUtils
+com.xcz.commons.core.config.DateFormatConfig
