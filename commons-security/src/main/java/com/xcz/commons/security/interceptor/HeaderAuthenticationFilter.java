@@ -6,6 +6,7 @@ import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.extend.LoginUser;
 import com.xcz.commons.security.service.TokenService;
 import com.xcz.commons.security.support.AuthenticationSessionSupport;
+import com.xcz.commons.security.support.ReleasePathCollector;
 import com.xcz.commons.security.utils.SecurityUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -48,6 +49,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     /** 免认证路径配置（{@code security.ignore.urls}） */
     private final IgnoreProperties ignoreProperties;
 
+    /** {@link com.xcz.commons.security.annotation.Release} 扫描到的免认证路径 */
+    private final ReleasePathCollector releasePathCollector;
+
     /** token 解析、续签、权限版本检测 */
     private final TokenService tokenService;
 
@@ -65,8 +69,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return ignoreProperties != null
-                && AuthenticationSessionSupport.isIgnoredPath(request.getRequestURI(), ignoreProperties.getUrls());
+        return AuthenticationSessionSupport.isIgnoredPath(
+                request.getRequestURI(),
+                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector));
     }
 
     @Override

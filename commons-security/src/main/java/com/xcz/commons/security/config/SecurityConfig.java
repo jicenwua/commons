@@ -6,6 +6,7 @@ import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.exception.GlobalExceptionHandler;
 import com.xcz.commons.security.interceptor.HeaderAuthenticationFilter;
 import com.xcz.commons.security.service.TokenService;
+import com.xcz.commons.security.support.ReleasePathCollector;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -41,8 +42,9 @@ public class SecurityConfig {
     @Bean
     public HeaderAuthenticationFilter headerAuthenticationFilter(
             IgnoreProperties ignoreProperties,
-            TokenService tokenService) {
-        return new HeaderAuthenticationFilter(ignoreProperties, tokenService);
+            TokenService tokenService,
+            ReleasePathCollector releasePathCollector) {
+        return new HeaderAuthenticationFilter(ignoreProperties, releasePathCollector, tokenService);
     }
 
     /**
@@ -82,6 +84,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
             HttpSecurity httpSecurity,
             IgnoreProperties ignoreProperties,
+            ReleasePathCollector releasePathCollector,
             HeaderAuthenticationFilter headerAuthenticationFilter,
             List<SecurityChainFilter> securityChainFilters) throws Exception {
         httpSecurity
@@ -90,8 +93,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> {
                     request.requestMatchers(HttpMethod.OPTIONS).permitAll(); //允许所有预加载
                     //获取所有忽略路径，对忽略路径进行放行
-                    List<String> ignoreUrls = ignoreProperties.getUrls();
-                    if (ignoreUrls != null && !ignoreUrls.isEmpty()) {
+                    List<String> ignoreUrls = ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector);
+                    if (!ignoreUrls.isEmpty()) {
                         request.requestMatchers(ignoreUrls.toArray(new String[0])).permitAll();
                     }
                     request.anyRequest().authenticated();

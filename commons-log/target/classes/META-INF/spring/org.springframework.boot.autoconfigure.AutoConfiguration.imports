@@ -1,3 +1,0 @@
-com.xcz.commons.log.config.SecurityRequestLogUserIdAutoConfiguration
-com.xcz.commons.log.servlet.ServletRequestLogAutoConfiguration
-com.xcz.commons.log.reactive.ReactiveRequestLogAutoConfiguration

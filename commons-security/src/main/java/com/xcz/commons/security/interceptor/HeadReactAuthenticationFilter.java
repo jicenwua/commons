@@ -7,6 +7,7 @@ import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.extend.LoginUser;
 import com.xcz.commons.security.service.TokenService;
 import com.xcz.commons.security.support.AuthenticationSessionSupport;
+import com.xcz.commons.security.support.ReleasePathCollector;
 import com.xcz.commons.security.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +56,9 @@ public class HeadReactAuthenticationFilter implements WebFilter {
     /** 免认证路径配置（{@code security.ignore.urls}） */
     private final IgnoreProperties ignoreProperties;
 
+    /** {@link com.xcz.commons.security.annotation.Release} 扫描到的免认证路径 */
+    private final ReleasePathCollector releasePathCollector;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -64,8 +68,9 @@ public class HeadReactAuthenticationFilter implements WebFilter {
             return chain.filter(exchange);
         }
         // 登录、验证码、Swagger 等白名单路径
-        if (ignoreProperties != null
-                && AuthenticationSessionSupport.isIgnoredPath(request.getURI().getPath(), ignoreProperties.getUrls())) {
+        if (AuthenticationSessionSupport.isIgnoredPath(
+                request.getURI().getPath(),
+                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector))) {
             return chain.filter(exchange);
         }
 
