@@ -2,12 +2,9 @@ package com.xcz.commons.security.config;
 
 import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.service.TokenService;
-import com.xcz.commons.security.support.ReleasePathCollector;
 import com.xcz.commons.security.utils.JwtUtils;
 import com.xcz.commons.security.utils.PermissionUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
@@ -41,21 +38,5 @@ public class SecurityCoreAutoConfiguration {
     @Bean("ss")
     public PermissionExpression permissionExpression() {
         return new PermissionExpression();
-    }
-
-    @Bean
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    @ConditionalOnClass(name = "org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping")
-    public ReleasePathCollector releasePathCollector(
-            org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping handlerMapping) {
-        return ReleasePathCollector.fromServlet(handlerMapping);
-    }
-
-    @Bean
-    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-    @ConditionalOnClass(name = "org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping")
-    public ReleasePathCollector releasePathCollector(
-            org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping handlerMapping) {
-        return ReleasePathCollector.fromReactive(handlerMapping);
     }
 }

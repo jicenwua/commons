@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.util.pattern.PathPattern;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +13,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 扫描 {@link Release} 注解标注的 Controller / 方法，收集免认证请求路径。
+ * <p>
+ * Servlet / Reactive 的 HandlerMapping 扫描逻辑分别在
+ * {@link com.xcz.commons.security.config.ServletReleasePathCollectorAutoConfiguration} 与
+ * {@link com.xcz.commons.security.config.ReactiveReleasePathCollectorAutoConfiguration} 中注册。
+ * </p>
  */
 @Slf4j
 public class ReleasePathCollector {
@@ -25,27 +28,12 @@ public class ReleasePathCollector {
     @Getter
     private final List<String> urls = new CopyOnWriteArrayList<>();
 
-    public static ReleasePathCollector fromServlet(
-            org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping handlerMapping) {
-        ReleasePathCollector collector = new ReleasePathCollector();
-        collector.collect(handlerMapping.getHandlerMethods(),
-                info -> ((org.springframework.web.servlet.mvc.method.RequestMappingInfo) info).getPatternValues());
-        return collector;
-    }
-
-    public static ReleasePathCollector fromReactive(
-            org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping handlerMapping) {
-        ReleasePathCollector collector = new ReleasePathCollector();
-        collector.collect(handlerMapping.getHandlerMethods(), info -> {
-            org.springframework.web.reactive.result.method.RequestMappingInfo mappingInfo =
-                    (org.springframework.web.reactive.result.method.RequestMappingInfo) info;
-            return mappingInfo.getPatternsCondition().getPatterns().stream()
-                    .map(PathPattern::getPatternString)
-                    .collect(Collectors.toSet());
-        });
-        return collector;
-    }
-
+    /**
+     * 从 HandlerMapping 扫描结果中提取带 {@link Release} 的路径。
+     *
+     * @param handlerMethods    HandlerMapping#getHandlerMethods()
+     * @param patternExtractor  从 mappingInfo 提取 URL 模式
+     */
     public void collect(Map<?, HandlerMethod> handlerMethods, Function<Object, Set<String>> patternExtractor) {
         handlerMethods.forEach((mappingInfo, handlerMethod) -> {
             if (!hasRelease(handlerMethod)) {

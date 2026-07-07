@@ -1,3 +1,5 @@
 com.xcz.commons.security.config.SecurityCoreAutoConfiguration
+com.xcz.commons.security.config.ServletReleasePathCollectorAutoConfiguration
+com.xcz.commons.security.config.ReactiveReleasePathCollectorAutoConfiguration
 com.xcz.commons.security.config.SecurityConfig
 com.xcz.commons.security.config.SecurityReactConfig
