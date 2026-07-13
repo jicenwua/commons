@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="commons-log" />
+        <module name="commons-mongodb" />
         <module name="commons-security" />
         <module name="commons-redis" />
         <module name="commons-oss" />
@@ -20,6 +21,7 @@
       <module name="commons-core" options="-parameters" />
       <module name="commons-database" options="-parameters" />
       <module name="commons-log" options="-parameters" />
+      <module name="commons-mongodb" options="-parameters" />
       <module name="commons-oss" options="-parameters" />
       <module name="commons-redis" options="-parameters" />
       <module name="commons-security" options="-parameters" />

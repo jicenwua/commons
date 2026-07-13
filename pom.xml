@@ -22,6 +22,7 @@
         <module>commons-security</module>
         <module>commons-redis</module>
         <module>commons-database</module>
+        <module>commons-mongodb</module>
     </modules>
 
     <properties>
@@ -92,6 +93,11 @@
             <dependency>
                 <groupId>com.xcz.commons</groupId>
                 <artifactId>commons-database</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xcz.commons</groupId>
+                <artifactId>commons-mongodb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
