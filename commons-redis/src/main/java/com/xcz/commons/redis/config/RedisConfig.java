@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
@@ -166,68 +167,84 @@ public class RedisConfig {
     }
 
     @Primary
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME0)
     public RedissonClient redisDatabase0(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_0);
     }
 
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME1)
     public RedissonClient redisDatabase1(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_1);
     }
 
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME2)
     public RedissonClient redisDatabase2(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_2);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME3)
     public RedissonClient redisDatabase3(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_3);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME4)
     public RedissonClient redisDatabase4(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_4);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME5)
     public RedissonClient redisDatabase5(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_5);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME6)
     public RedissonClient redisDatabase6(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_6);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME7)
     public RedissonClient redisDatabase7(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_7);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME8)
     public RedissonClient redisDatabase8(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_8);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME9)
     public RedissonClient redisDatabase9(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_9);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME10)
     public RedissonClient redisDatabase10(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_10);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME11)
     public RedissonClient redisDatabase11(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_11);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME12)
     public RedissonClient redisDatabase12(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_12);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME13)
     public RedissonClient redisDatabase13(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_13);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME14)
     public RedissonClient redisDatabase14(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_14);
     }
+    @Lazy
     @Bean(DatabaseBeanName.DATABASE_BEAN_NAME15)
     public RedissonClient redisDatabase15(){
         return checkRedissonConfig(DatabaseEnum.DATABASE_15);

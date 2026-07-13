@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ServerWebExchange;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ServerWebInputException;
  * 全局异常处理器 (Reactive 版本 - 给 Gateway 用)
  */
 @Slf4j
+@RestControllerAdvice
 public class GlobalReactiveExceptionHandler {
 
     private void recordRequestException(ServerWebExchange exchange, Throwable e) {

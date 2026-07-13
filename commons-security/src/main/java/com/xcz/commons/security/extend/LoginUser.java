@@ -115,8 +115,11 @@ public class LoginUser implements UserDetails {
         List<String> authorities = new ArrayList<>();
         if (permissions != null && !permissions.isEmpty()) {
             Set<String> roles = permissions.keySet();
-            Set<String> uniquePermissions = permissions.values().stream()
+            Collection<Set<String>> values = permissions.values();
+            Set<String> uniquePermissions = values.stream()
+                    .filter(Objects::nonNull)
                     .flatMap(Collection::stream)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
 
             authorities.addAll( roles);
@@ -133,7 +136,9 @@ public class LoginUser implements UserDetails {
     public Set<String> getPermissionSet(){
         return this.getPermissions().values()
                 .stream()
+                .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 
