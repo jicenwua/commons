@@ -2,6 +2,7 @@ package com.xcz.commons.security.utils;
 
 import com.xcz.commons.core.constant.SecurityConstants;
 import com.xcz.commons.core.constant.TokenConstants;
+import com.xcz.commons.core.utils.ServletUtils;
 import com.xcz.commons.core.utils.StringUtils;
 import com.xcz.commons.security.extend.LoginUser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +39,19 @@ public class SecurityUtils {
         }
         return principal;
     }
+
+    /**
+     * 是否登录
+     */
+    public static boolean isLogin() {
+        HttpServletRequest request = ServletUtils.getRequest();
+        if (request == null || StringUtils.isEmpty(getToken(request))) {
+            return false;
+        }
+        Authentication authentication = getAuthentication();
+        return authentication != null && authentication.getPrincipal() instanceof LoginUser;
+    }
+
 
     /**
      * 获取当前登录用户名。

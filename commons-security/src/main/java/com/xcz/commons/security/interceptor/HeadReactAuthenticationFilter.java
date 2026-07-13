@@ -39,12 +39,15 @@ import reactor.core.scheduler.Schedulers;
  * 单次请求处理流程：
  * </p>
  * <ol>
- *   <li>OPTIONS / 白名单路径直接放行</li>
+ *   <li>OPTIONS 预检请求直接放行</li>
+ *   <li>白名单路径无 token 时直接放行；有 token 时仍解析并写入 {@link ReactiveSecurityContextHolder}</li>
  *   <li>在 boundedElastic 线程池执行 Redis 阻塞 IO（避免阻塞 Netty 事件循环）</li>
- *   <li>建立 {@link ReactiveSecurityContextHolder} 上下文</li>
  *   <li>按需改写下游请求头、回写权限响应头</li>
  *   <li>继续 Gateway 路由转发</li>
  * </ol>
+ * <p>
+ * 白名单路径有 token 时仍解析登录态，供下游 {@code @Release} 接口通过 {@link SecurityUtils#isLogin()} 识别用户。
+ * </p>
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -59,6 +62,9 @@ public class HeadReactAuthenticationFilter implements WebFilter {
     /** {@link com.xcz.commons.security.annotation.Release} 扫描到的免认证路径 */
     private final ReleasePathCollector releasePathCollector;
 
+    /**
+     * 白名单路径：无 token 时放行；有 token 时尝试解析并写入 Reactive 安全上下文。
+     */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -67,15 +73,13 @@ public class HeadReactAuthenticationFilter implements WebFilter {
         if (HttpMethod.OPTIONS.equals(method)) {
             return chain.filter(exchange);
         }
-        // 登录、验证码、Swagger 等白名单路径
-        if (AuthenticationSessionSupport.isIgnoredPath(
-                request.getURI().getPath(),
-                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector))) {
-            return chain.filter(exchange);
-        }
 
+        boolean ignored = isIgnoredPath(request);
         String requestToken = SecurityUtils.getToken(request);
         if (StringUtils.isEmpty(requestToken)) {
+            if (ignored) {
+                return chain.filter(exchange);
+            }
             return failHandler(exchange.getResponse());
         }
 
@@ -84,15 +88,25 @@ public class HeadReactAuthenticationFilter implements WebFilter {
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(result -> continueWithAuthenticatedSession(exchange, chain, request, requestToken, result))
                 .onErrorResume(ArithmeticException.class, e -> {
-                    // 可预期的认证失败（token 无效、会话过期等）
                     log.debug("登录校验失败: {}", e.getMessage());
+                    if (ignored) {
+                        return chain.filter(exchange);
+                    }
                     return failHandler(exchange.getResponse(), e.getMessage());
                 })
                 .onErrorResume(Exception.class, e -> {
-                    // 非预期异常统一返回 401，避免泄露内部细节
                     log.error("登录校验异常", e);
+                    if (ignored) {
+                        return chain.filter(exchange);
+                    }
                     return failHandler(exchange.getResponse(), "请先登录");
                 });
+    }
+
+    private boolean isIgnoredPath(ServerHttpRequest request) {
+        return AuthenticationSessionSupport.isIgnoredPath(
+                request.getURI().getPath(),
+                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector));
     }
 
     /**

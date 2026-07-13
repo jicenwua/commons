@@ -39,7 +39,8 @@ import java.io.IOException;
  * </ol>
  * <p>
  * 经 Gateway 转发的请求通常已在网关完成 token 刷新；本过滤器作为兜底再次校验。
- * 白名单路径由 Nacos / 本地配置的 {@code security.ignore.urls} 控制。
+ * 白名单路径无 token 时直接放行；有 token 时仍解析并写入 {@link SecurityContextHolder}，
+ * 供 {@code @Release} 接口通过 {@link SecurityUtils#isLogin()} 识别登录用户。
  * </p>
  */
 @Slf4j
@@ -65,40 +66,44 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 白名单路径跳过本过滤器（登录、验证码、Swagger 等）。
+     * 白名单路径：无 token 时放行；有 token 时尝试解析并写入 SecurityContext。
      */
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        return AuthenticationSessionSupport.isIgnoredPath(
-                request.getRequestURI(),
-                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector));
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        //判断是否有token
+        boolean ignored = isIgnoredPath(request);
         String requestToken = SecurityUtils.getToken(request);
         if (StringUtils.isEmpty(requestToken)) {
+            if (ignored) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             handlerAuthFail(response, "请先登录");
             return;
         }
 
         try {
-            //获取登录用户信息
             AuthenticationSessionSupport.RefreshResult result =
                     AuthenticationSessionSupport.authenticateAndRefresh(tokenService, requestToken);
             setAuthentication(result.loginUser());
-            // 仅角色/权限版本变更时通知客户端；JWT 单纯续签不写响应头
             if (result.permissionRefreshed()) {
                 AuthenticationSessionSupport.writePermissionHeader(response, result.loginUser());
             }
             filterChain.doFilter(request, response);
         } catch (ArithmeticException e) {
-            // TokenService / JwtUtils 约定用 ArithmeticException 表示可预期的认证失败
             log.debug("认证失败: {}", e.getMessage());
+            if (ignored) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             handlerAuthFail(response, e.getMessage());
         }
+    }
+
+    private boolean isIgnoredPath(HttpServletRequest request) {
+        return AuthenticationSessionSupport.isIgnoredPath(
+                request.getRequestURI(),
+                ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector));
     }
 
     /**
