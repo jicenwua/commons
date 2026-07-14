@@ -7,6 +7,7 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.xcz.commons.mongodb.properties.MongoSettingsProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,10 +29,21 @@ import java.util.concurrent.TimeUnit;
  * 通过自定义 {@link MongoClientSettings} 覆盖 Spring Boot 默认自动配置，
  * 以支持连接池、超时、副本集读偏好等细粒度控制。
  */
+@Slf4j
 @AutoConfiguration
 @EnableConfigurationProperties(MongoSettingsProperties.class)
 @ConditionalOnProperty(prefix = "mongo", name = "database")
 public class MongoConfig {
+
+    private static final String STARTUP_BANNER = """
+            
+              __  __                            _     
+             |  \\/  | ___  _ __ ___  _ __   ___| |__  
+             | |\\/| |/ _ \\| '_ ` _ \\| '_ \\ / _ \\ '_ \\ 
+             | |  | | (_) | | | | | | |_) |  __/ | | |
+             |_|  |_|\\___/|_| |_| |_| .__/ \\___|_| |_|
+                                    |_|        
+            """;
 
     @Autowired
     private MongoSettingsProperties mongoSettingsProperties;
@@ -45,6 +57,7 @@ public class MongoConfig {
      */
     @Bean
     public MongoClient mongoClient() {
+        logStartupBanner();
         validateSettings();
 
         List<ServerAddress> serverAddresses = buildServerAddresses();
@@ -193,4 +206,33 @@ public class MongoConfig {
             default -> throw new IllegalArgumentException("不支持的 mongo.cluster.read-preference: " + value);
         };
     }
+
+    /**
+     * 启动时输出 MongoDB 连接摘要与 ASCII 标识，风格与 MyBatis Plus 等组件启动日志一致。
+     */
+    private void logStartupBanner() {
+        String appName = environment.getProperty("spring.application.name", "application");
+        String hosts = formatHostsSummary();
+        String mode = mongoSettingsProperties.getMode().name().toLowerCase().replace('_', '-');
+
+
+        log.info("[Commons MongoDB] Successfully initialized MongoClient for [{}], database: {}, mode: {}, hosts: {}",
+                appName, mongoSettingsProperties.getDatabase(), mode, hosts);
+        log.info(STARTUP_BANNER);
+    }
+
+    private String formatHostsSummary() {
+        List<String> hosts = mongoSettingsProperties.getHosts();
+        List<Integer> ports = mongoSettingsProperties.getPorts();
+        int limit = mongoSettingsProperties.getMode() == MongoSettingsProperties.DeployMode.STANDALONE
+                ? 1
+                : hosts.size();
+
+        List<String> endpoints = new ArrayList<>(limit);
+        for (int i = 0; i < limit; i++) {
+            endpoints.add(hosts.get(i) + ":" + ports.get(i));
+        }
+        return String.join(", ", endpoints);
+    }
+
 }
