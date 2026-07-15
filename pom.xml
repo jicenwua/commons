@@ -39,7 +39,6 @@
         <mysql-connector-j.version>8.0.31</mysql-connector-j.version>
         <durid.version>4.3.1</durid.version>
         <redission.version>3.50.0</redission.version>
-        <hutool.version>5.8.38</hutool.version>
         <ip2region.version>3.3.4</ip2region.version>
         <user-agent-utils.version>1.21</user-agent-utils.version>
         <aliyun-oss.version>3.17.4</aliyun-oss.version>
@@ -48,13 +47,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>cn.hutool</groupId>
-                <artifactId>hutool-bom</artifactId>
-                <version>${hutool.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.springframework.cloud</groupId>

@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerIntercep
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.apache.ibatis.reflection.MetaObject;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  * 兼容 MyBatis 和 MyBatis-Plus 的完整配置
  */
 @AutoConfiguration
-@MapperScan("com.xcz.**.mapper")
 public class MybatisConfig {
     @Value("${mybatis-plus.page.overflow:false}")
     private boolean overflow;
