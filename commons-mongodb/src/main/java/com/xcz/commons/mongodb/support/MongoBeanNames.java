@@ -3,8 +3,8 @@ package com.xcz.commons.mongodb.support;
 /**
  * 多数据源 Bean 命名约定。
  * <p>
- * 每个数据源注册 4 个命名 Bean，主数据源额外注册无 qualifier 的默认别名。
- * 例如数据源 {@code primary} 对应 {@code primaryMongoTemplate}，别名 {@code mongoTemplate}。
+ * 每个数据源注册 4 个命名 Bean；主数据源直接使用默认 Bean 名（{@code mongoTemplate} 等），
+ * 并额外注册 {@code primaryMongoTemplate} 等命名别名。
  */
 public final class MongoBeanNames {
 
