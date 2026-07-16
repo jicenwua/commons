@@ -31,7 +31,7 @@ public final class MongoClientFactory {
      * @param dataSourceName 数据源名称，仅用于校验错误提示
      * @param properties     单数据源连接配置
      * @param environment    Spring 环境，用于读取 {@code spring.application.name}
-     * @param primary        是否为主数据源，主库会打印 ASCII 启动标识
+     * @param primary        是否为主数据源；主库创建时打印 ASCII 启动标识（全局仅一次）
      * @return 已配置的 {@link MongoClient} 实例
      */
     public static MongoClient create(String dataSourceName, MongoDataSourceProperties properties,

@@ -50,6 +50,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
         return Ordered.HIGHEST_PRECEDENCE;
     }
 
+
     /**
      * 从 Environment 绑定 {@code mongo.*} 配置，校验后一次性注册全部数据源 Bean 定义。
      * <p>

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * MongoDB 启动日志输出。
  * <p>
  * 在 {@link com.mongodb.client.MongoClient} 实际创建前打印，确保与驱动连接日志上下衔接。
- * ASCII 标识全局只打印一次。
+ * ASCII 标识仅在主数据源创建时打印一次，其余数据源只输出摘要行。
  */
 @Slf4j
 public final class MongoStartupLogger {
@@ -32,7 +32,8 @@ public final class MongoStartupLogger {
     }
 
     /**
-     * 在 MongoClient 创建前输出数据源摘要；ASCII 标识全局仅打印一次。
+     * 在 MongoClient 创建前输出数据源摘要；每个数据源各打印一行。
+     * ASCII 标识仅在主数据源首次创建时打印一次，多数据源场景不会重复。
      */
     public static void logBeforeClientCreate(String dataSourceName, boolean primary,
                                              MongoDataSourceProperties properties,
@@ -46,7 +47,7 @@ public final class MongoStartupLogger {
                 mode,
                 MongoClientFactory.formatHostsSummary(properties),
                 primary ? " (primary)" : "");
-        if (BANNER_PRINTED.compareAndSet(false, true)) {
+        if (primary && BANNER_PRINTED.compareAndSet(false, true)) {
             log.info(STARTUP_BANNER);
         }
     }
