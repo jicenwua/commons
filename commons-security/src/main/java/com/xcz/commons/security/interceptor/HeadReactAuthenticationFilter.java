@@ -26,28 +26,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
- * Reactive 环境（Gateway 等）登录校验过滤器。
- * <p>
- * 与 {@link HeaderAuthenticationFilter} 共用 {@link AuthenticationSessionSupport}，
- * 核心认证逻辑一致：加载 {@link LoginUser}、JWT 续签、权限版本刷新。
- * </p>
- * <p>
- * 网关额外职责：token 发生变更时改写转发请求的 {@code authorization} 头，
- * 使下游服务直接使用有效 token，减少重复 Redis 访问。
- * </p>
- * <p>
- * 单次请求处理流程：
- * </p>
- * <ol>
- *   <li>OPTIONS 预检请求直接放行</li>
- *   <li>白名单路径无 token 时直接放行；有 token 时仍解析并写入 {@link ReactiveSecurityContextHolder}</li>
- *   <li>在 boundedElastic 线程池执行 Redis 阻塞 IO（避免阻塞 Netty 事件循环）</li>
- *   <li>按需改写下游请求头、回写权限响应头</li>
- *   <li>继续 Gateway 路由转发</li>
- * </ol>
- * <p>
- * 白名单路径有 token 时仍解析登录态，供下游 {@code @Release} 接口通过 {@link SecurityUtils#isLogin()} 识别用户。
- * </p>
+ * Reactive 环境登录校验过滤器。
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -56,14 +35,14 @@ public class HeadReactAuthenticationFilter implements WebFilter {
     /** token 解析、续签、权限版本检测 */
     private final TokenService tokenService;
 
-    /** 免认证路径配置（{@code security.ignore.urls}） */
+    /** 免认证路径配置 */
     private final IgnoreProperties ignoreProperties;
 
-    /** {@link com.xcz.commons.security.annotation.Release} 扫描到的免认证路径 */
+    /** @Release 扫描到的免认证路径 */
     private final ReleasePathCollector releasePathCollector;
 
     /**
-     * 白名单路径：无 token 时放行；有 token 时尝试解析并写入 Reactive 安全上下文。
+     * 白名单路径：无 token 放行；有 token 时解析并写入安全上下文。
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

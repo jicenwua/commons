@@ -15,9 +15,6 @@ import org.springframework.web.server.WebFilter;
 
 /**
  * WebFlux / Gateway 请求日志自动配置。
- * <p>
- * 在 Reactive 环境下自动注册 {@link ReactiveLogFilter}，
- * 引入 {@code commons-log} 依赖即可生效，无需额外 Java 配置。
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
@@ -26,7 +23,7 @@ import org.springframework.web.server.WebFilter;
 public class ReactiveRequestLogAutoConfiguration {
 
     /**
-     * 默认用户 ID 解析器（可被 {@link com.xcz.commons.log.config.SecurityRequestLogUserIdAutoConfiguration} 覆盖）。
+     * 默认用户 ID 解析器
      */
     @Bean
     @ConditionalOnMissingBean
@@ -35,7 +32,7 @@ public class ReactiveRequestLogAutoConfiguration {
     }
 
     /**
-     * 响应式请求日志 WebFilter。
+     * 注册响应式请求日志 Filter
      */
     @Bean
     @ConditionalOnMissingBean(ReactiveLogFilter.class)

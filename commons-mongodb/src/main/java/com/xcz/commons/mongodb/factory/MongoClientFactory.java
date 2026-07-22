@@ -16,9 +16,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 根据单数据源配置创建 {@link MongoClient}。
- * <p>
- * 封装 {@link MongoClientSettings} 的构建逻辑，供多数据源场景复用。
+ * 根据单数据源配置创建 MongoClient。
  */
 public final class MongoClientFactory {
 
@@ -28,11 +26,11 @@ public final class MongoClientFactory {
     /**
      * 创建 MongoDB 原生客户端。
      *
-     * @param dataSourceName 数据源名称，仅用于校验错误提示
-     * @param properties     单数据源连接配置
-     * @param environment    Spring 环境，用于读取 {@code spring.application.name}
-     * @param primary        是否为主数据源；主库创建时打印 ASCII 启动标识（全局仅一次）
-     * @return 已配置的 {@link MongoClient} 实例
+     * @param dataSourceName 数据源名称
+     * @param properties     连接配置
+     * @param environment    Spring 环境
+     * @param primary        是否主数据源
+     * @return MongoClient
      */
     public static MongoClient create(String dataSourceName, MongoDataSourceProperties properties,
                                      Environment environment, boolean primary) {
@@ -86,10 +84,7 @@ public final class MongoClientFactory {
     }
 
     /**
-     * 格式化 hosts 摘要，用于启动日志输出。
-     *
-     * @param properties 单数据源配置
-     * @return 形如 {@code 127.0.0.1:27017, 10.0.0.2:27017} 的端点列表
+     * 格式化 hosts 摘要，用于启动日志。
      */
     public static String formatHostsSummary(MongoDataSourceProperties properties) {
         List<String> hosts = properties.getHosts();
@@ -107,7 +102,6 @@ public final class MongoClientFactory {
 
     /**
      * 根据 hosts / ports 构建服务器地址列表。
-     * 单机模式仅取第一个节点；副本集模式将全部节点作为种子列表。
      */
     private static List<ServerAddress> buildServerAddresses(MongoDataSourceProperties properties) {
         List<String> hosts = properties.getHosts();
@@ -124,7 +118,7 @@ public final class MongoClientFactory {
     }
 
     /**
-     * 构建 SCRAM 认证信息；未配置用户名时返回 null，表示匿名连接。
+     * 构建认证信息；未配置用户名时返回 null。
      */
     private static MongoCredential buildCredential(MongoDataSourceProperties properties) {
         if (!StringUtils.hasText(properties.getUsername())) {

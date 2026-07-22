@@ -24,15 +24,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import java.util.Map;
 
 /**
- * 根据 {@code mongo.datasources} 动态注册多组 MongoDB Bean。
- * <p>
- * 在 Spring 容器刷新早期阶段（Bean 定义注册期）按配置项逐个注册
- * {@link MongoClient} → {@link SimpleMongoClientDatabaseFactory}
- * → {@link MongoTemplate} → {@link MongoTransactionManager} 依赖链。
- * 主数据源（{@code mongo.primary}）直接使用默认 Bean 名（{@code mongoTemplate} 等），
- * 并额外注册 {@code primaryMongoTemplate} 等命名别名。
- * <p>
- * 启动日志在 {@link MongoClient} 实际实例化时输出，而非本阶段。
+ * 按配置动态注册多组 MongoDB Bean。
  */
 public class MongoDataSourceBeanDefinitionRegistrar
         implements BeanDefinitionRegistryPostProcessor, EnvironmentAware, PriorityOrdered {
@@ -52,10 +44,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
 
 
     /**
-     * 从 Environment 绑定 {@code mongo.*} 配置，校验后一次性注册全部数据源 Bean 定义。
-     * <p>
-     * 使用 {@link Binder} 而非直接注入 {@link MongoSettingsProperties}，
-     * 是因为本处理器运行在 Bean 工厂初始化之前，配置 Bean 尚未就绪。
+     * 绑定 mongo 配置并注册全部数据源 Bean 定义。
      */
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -72,10 +61,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
     }
 
     /**
-     * 所有 Bean 定义注册完成后再次清理 Spring Boot 默认 Mongo Bean。
-     * <p>
-     * Spring Boot 的 {@code MongoAutoConfiguration} 可能在本处理器之后才注册 {@code mongo} Bean，
-     * 需在实例化前做最后一轮移除，避免重复创建 MongoClient 导致日志分散。
+     * 清理 Spring Boot 晚注册的默认 mongo Bean。
      */
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
@@ -87,10 +73,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
     }
 
     /**
-     * 一次性注册全部数据源：冲突 Bean 清理只执行一次，循环在方法内部完成。
-     *
-     * @param registry Bean 定义注册表
-     * @param settings 多数据源顶层配置
+     * 一次性注册全部数据源 Bean。
      */
     private void registerAllDataSources(BeanDefinitionRegistry registry, MongoSettingsProperties settings) {
         removeConflictingPrimaryBeans(registry);
@@ -103,12 +86,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
     }
 
     /**
-     * 为单个数据源注册完整的 Bean 依赖链。
-     *
-     * @param registry   Bean 定义注册表
-     * @param name       数据源名称，对应 {@code mongo.datasources} 的 key
-     * @param properties 该数据源的连接配置
-     * @param primary    是否为主数据源；主库使用默认 Bean 名并标记 {@code @Primary}
+     * 为单个数据源注册 Client / Factory / Template / TransactionManager。
      */
     private void registerSingleDataSource(BeanDefinitionRegistry registry, String name,
                                           MongoDataSourceProperties properties, boolean primary) {
@@ -170,10 +148,7 @@ public class MongoDataSourceBeanDefinitionRegistrar
     }
 
     /**
-     * 移除 Spring Boot 默认 Mongo 自动配置可能已注册的 Bean，为本模块主库 Bean 让路。
-     * <p>
-     * 仅在 {@link #registerAllDataSources} 开头调用一次；不可在 {@link #postProcessBeanFactory} 中移除
-     * {@code mongoTemplate} 等，否则会误删本模块已注册的 Bean。
+     * 移除与主库默认名冲突的 Spring Boot Mongo Bean。
      */
     private void removeConflictingPrimaryBeans(BeanDefinitionRegistry registry) {
         removeBeanDefinitionIfExists(registry, "mongo");

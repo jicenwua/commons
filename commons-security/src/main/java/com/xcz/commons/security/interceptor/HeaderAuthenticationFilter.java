@@ -21,43 +21,23 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Servlet 环境（业务微服务等）登录校验过滤器。
- * <p>
- * 在 {@code UsernamePasswordAuthenticationFilter} 之前执行（见 {@code SecurityConfig}），
- * 与 {@link HeadReactAuthenticationFilter} 共用 {@link AuthenticationSessionSupport}，
- * 保证 Reactive / Servlet 认证行为一致。
- * </p>
- * <p>
- * 单次请求处理流程：
- * </p>
- * <ol>
- *   <li>从 {@code authorization} 请求头读取 token</li>
- *   <li>{@link AuthenticationSessionSupport#authenticateAndRefresh} 解析 Redis 会话、检测权限版本</li>
- *   <li>将 {@link LoginUser} 写入 {@link SecurityContextHolder}</li>
- *   <li>权限变更时回写 {@code authorization}、{@code role_permission} 响应头</li>
- *   <li>放行后续 Filter / Controller（{@code @PreAuthorize} 等在此之后生效）</li>
- * </ol>
- * <p>
- * 经 Gateway 转发的请求通常已在网关完成 token 刷新；本过滤器作为兜底再次校验。
- * 白名单路径无 token 时直接放行；有 token 时仍解析并写入 {@link SecurityContextHolder}，
- * 供 {@code @Release} 接口通过 {@link SecurityUtils#isLogin()} 识别登录用户。
- * </p>
+ * Servlet 环境登录校验过滤器。
  */
 @Slf4j
 @RequiredArgsConstructor
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
-    /** 免认证路径配置（{@code security.ignore.urls}） */
+    /** 免认证路径配置 */
     private final IgnoreProperties ignoreProperties;
 
-    /** {@link com.xcz.commons.security.annotation.Release} 扫描到的免认证路径 */
+    /** @Release 扫描到的免认证路径 */
     private final ReleasePathCollector releasePathCollector;
 
     /** token 解析、续签、权限版本检测 */
     private final TokenService tokenService;
 
     /**
-     * 将 LoginUser 写入 SecurityContext，供 {@code @PreAuthorize}、{@link SecurityUtils} 使用。
+     * 将 LoginUser 写入 SecurityContext。
      */
     private static void setAuthentication(LoginUser loginUser) {
         UsernamePasswordAuthenticationToken authentication =
@@ -66,7 +46,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * 白名单路径：无 token 时放行；有 token 时尝试解析并写入 SecurityContext。
+     * 白名单路径：无 token 放行；有 token 时解析并写入 SecurityContext。
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

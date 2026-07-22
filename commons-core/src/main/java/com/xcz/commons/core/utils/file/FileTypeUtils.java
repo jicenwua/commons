@@ -16,12 +16,10 @@ public class FileTypeUtils {
     }
 
     /**
-     * 获取文件类型
-     * <p>
-     * 例如: dimple.txt, 返回: txt
+     * 获取文件类型（如 dimple.txt → txt）。
      *
-     * @param file 文件名
-     * @return 后缀（不含".")
+     * @param file 文件
+     * @return 后缀（不含 "."）
      */
     public static String getFileType(File file) {
         if (null == file) {
@@ -31,12 +29,10 @@ public class FileTypeUtils {
     }
 
     /**
-     * 获取文件类型
-     * <p>
-     * 例如: dimple.txt, 返回: txt
+     * 获取文件类型（如 dimple.txt → txt）。
      *
      * @param fileName 文件名
-     * @return 后缀（不含".")
+     * @return 后缀（不含 "."）
      */
     public static String getFileType(String fileName) {
         int separatorIndex = fileName.lastIndexOf(".");

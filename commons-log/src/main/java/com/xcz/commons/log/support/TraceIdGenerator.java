@@ -3,7 +3,7 @@ package com.xcz.commons.log.support;
 import com.xcz.commons.core.utils.uuid.IdUtils;
 
 /**
- * 全局 traceId 生成器，基于 Hutool 雪花算法保证分布式唯一性。
+ * 生成全局唯一 traceId。
  */
 public final class TraceIdGenerator {
 
@@ -11,7 +11,7 @@ public final class TraceIdGenerator {
     }
 
     /**
-     * 生成下一个 traceId 字符串。
+     * 生成下一个 traceId。
      *
      * @return 全局唯一的 traceId
      */

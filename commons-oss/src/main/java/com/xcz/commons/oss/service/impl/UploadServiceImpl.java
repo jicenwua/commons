@@ -10,6 +10,7 @@ import com.xcz.commons.oss.listener.PutObjectProgressListener;
 import com.xcz.commons.oss.service.UploadService;
 import com.xcz.commons.oss.util.OssPathUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.sql.Date;
  * OSS文件上传服务实现类
  * 提供简单上传、带进度上传和临时URL生成功能
  */
+@Service
 @RequiredArgsConstructor
 public class UploadServiceImpl implements UploadService {
 

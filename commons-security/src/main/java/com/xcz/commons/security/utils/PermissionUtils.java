@@ -23,11 +23,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 权限验证工具类
- * <p>
- * 对登录用户权限进行缓存更新，从用户角色变更到用户角色权限的变更两个角度进行动态更新用户权限并生成新的token和权限
- * 返回给前段进行操作
- * </p>
+ * 权限验证与动态权限刷新工具。
  */
 @Slf4j
 public class PermissionUtils {
@@ -38,9 +34,7 @@ public class PermissionUtils {
     private static final String SYS_PERMISSION = "sys:role:permission";
     /*** 用户新角色缓存（用户的角色变了） **/
     private static final String SYS_USER_ROLE_CHANGE = "sys:role:user:";
-    /**
-     * 角色变更列表专用序列化（纯 JSON 数组），避免 Redisson JsonJacksonCodec 将 roleKey（如 admin）误判为多态类型 id
-     */
+    /** 角色变更列表专用序列化，避免 roleKey 被误判为多态类型 id */
     private static final ObjectMapper ROLE_CHANGE_JSON = new ObjectMapper();
     private static final TypeReference<List<String>> ROLE_CHANGE_TYPE = new TypeReference<>() {
     };

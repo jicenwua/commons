@@ -12,30 +12,27 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 可重复读取请求体的 {@link HttpServletRequest} 包装类。
- * <p>
- * Servlet 的 {@link ServletInputStream} 默认只能读一次；
- * 通过缓存 byte[]，日志拦截器与 Controller 均可读取 body。
+ * 可重复读取请求体的 Request 包装。
  */
 public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
-    /** 缓存的请求体字节数组 */
+    /**
+     * 缓存的请求体字节
+     */
     private final byte[] cachedBody;
 
     /**
      * 读取并缓存原始请求体。
      *
-     * @param request 原始请求（由 {@link LogFilter} 传入，已排除 multipart）
-     * @throws IOException 读取输入流失败时抛出
+     * @throws IOException 读取输入流失败
      */
     public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
         super(request);
-        // 一次性读入内存，后续通过包装流反复供给 Spring MVC / 日志模块
         this.cachedBody = request.getInputStream().readAllBytes();
     }
 
     /**
-     * 返回基于缓存的可重复读取输入流。
+     * 返回可重复读取的输入流
      */
     @Override
     public ServletInputStream getInputStream() {
@@ -43,7 +40,7 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     }
 
     /**
-     * 返回基于缓存的字符流 reader。
+     * 返回基于缓存的 Reader
      */
     @Override
     public BufferedReader getReader() {
@@ -52,12 +49,9 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     }
 
     /**
-     * 沿 {@link HttpServletRequestWrapper} 链查找缓存包装实例。
-     * <p>
-     * 拦截器拿到的可能是外层 Wrapper，不能直接 {@code instanceof}。
+     * 沿 Wrapper 链查找本包装实例。
      *
-     * @param request 当前请求（可能为多层 Wrapper）
-     * @return 缓存包装实例；未找到时返回 {@code null}
+     * @return 实例；未找到返回 {@code null}
      */
     public static CachedBodyHttpServletRequest resolve(HttpServletRequest request) {
         HttpServletRequest current = request;
@@ -75,9 +69,9 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     }
 
     /**
-     * 获取缓存的请求体字符串，供日志打印使用。
+     * 获取缓存的请求体字符串。
      *
-     * @return UTF-8 字符串；body 为空时返回 {@code null}
+     * @return UTF-8 字符串；空 body 返回 {@code null}
      */
     public String getBody() {
         if (cachedBody == null || cachedBody.length == 0) {
@@ -87,7 +81,7 @@ public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
     }
 
     /**
-     * 基于 byte[] 的 {@link ServletInputStream} 实现，支持多次读取。
+     * 基于 byte[] 的可重复读取输入流
      */
     private static class CachedServletInputStream extends ServletInputStream {
 

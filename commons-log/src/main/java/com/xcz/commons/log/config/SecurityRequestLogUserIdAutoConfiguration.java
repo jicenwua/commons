@@ -7,18 +7,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 
 /**
- * 安全模块集成：当 classpath 存在 {@code SecurityUtils} 时，自动解析当前登录用户 ID。
- * <p>
- * 使用反射调用，避免 {@code commons-log} 硬依赖 {@code commons-security}。
+ * 存在 SecurityUtils 时，自动用其解析当前用户 ID。
  */
 @AutoConfiguration
 @ConditionalOnClass(name = "com.xcz.commons.security.utils.SecurityUtils")
 public class SecurityRequestLogUserIdAutoConfiguration {
 
     /**
-     * 通过 {@code SecurityUtils.getUserId()} 解析用户 ID；解析失败时返回 {@code 0L}。
-     *
-     * @return 基于 SecurityUtils 的用户 ID 解析器
+     * 基于 SecurityUtils 的用户 ID 解析器。
      */
     @Bean
     @ConditionalOnMissingBean(RequestLogUserIdResolver.class)

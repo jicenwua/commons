@@ -10,24 +10,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * MongoDB 多数据源顶层配置，对应 Nacos / application 中 {@code mongo.*} 前缀项。
+ * MongoDB 多数据源顶层配置。
  */
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @ConfigurationProperties(prefix = "mongo")
 public class MongoSettingsProperties {
 
-    /**
-     * 主数据源名称，对应 {@link #datasources} 中的 key。
-     * 主库会额外注册无 qualifier 的 {@code mongoClient}、{@code mongoTemplate} 等 Bean。
-     */
+    /** 主数据源名称，对应 datasources 中的 key */
     String primary = "primary";
 
-    /*** 命名数据源集合，key 为数据源名称（如 primary、analytics） **/
+    /** 命名数据源集合，key 为数据源名称 */
     Map<String, MongoDataSourceProperties> datasources = new LinkedHashMap<>();
 
     /**
-     * 校验多数据源配置完整性，在 Bean 注册前快速失败。
+     * 校验多数据源配置完整性。
      */
     public void validate() {
         if (datasources == null || datasources.isEmpty()) {

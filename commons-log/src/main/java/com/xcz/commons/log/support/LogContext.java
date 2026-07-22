@@ -1,13 +1,13 @@
 package com.xcz.commons.log.support;
 
 /**
- * 请求日志上下文，基于 ThreadLocal 保存单次请求的计时信息（Servlet 栈）。
- * <p>
- * 在 {@code preHandle} 记录开始时间，{@code afterCompletion} 计算耗时后清理，防止线程池复用导致数据串扰。
+ * 保存请求开始时间戳（ThreadLocal）。
  */
 public final class LogContext {
 
-    /** 请求开始时间（毫秒时间戳） */
+    /**
+     * 请求开始时间（毫秒时间戳）
+     */
     private static final ThreadLocal<Long> START_TIME = new ThreadLocal<>();
 
     private LogContext() {
@@ -30,7 +30,7 @@ public final class LogContext {
     }
 
     /**
-     * 清理当前线程的上下文，防止线程池复用导致数据串扰。
+     * 清理当前线程上下文
      */
     public static void clear() {
         START_TIME.remove();

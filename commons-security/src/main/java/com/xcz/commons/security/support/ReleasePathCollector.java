@@ -15,12 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 
 /**
- * 扫描 {@link Release} 注解标注的 Controller / 方法，收集免认证请求路径。
- * <p>
- * Servlet / Reactive 的 HandlerMapping 扫描逻辑分别在
- * {@link com.xcz.commons.security.config.ServletReleasePathCollectorAutoConfiguration} 与
- * {@link com.xcz.commons.security.config.ReactiveReleasePathCollectorAutoConfiguration} 中注册。
- * </p>
+ * 扫描 @Release 注解，收集免认证请求路径。
  */
 @Slf4j
 public class ReleasePathCollector {
@@ -29,10 +24,7 @@ public class ReleasePathCollector {
     private final List<String> urls = new CopyOnWriteArrayList<>();
 
     /**
-     * 从 HandlerMapping 扫描结果中提取带 {@link Release} 的路径。
-     *
-     * @param handlerMethods    HandlerMapping#getHandlerMethods()
-     * @param patternExtractor  从 mappingInfo 提取 URL 模式
+     * 从 HandlerMapping 扫描结果中提取带 @Release 的路径。
      */
     public void collect(Map<?, HandlerMethod> handlerMethods, Function<Object, Set<String>> patternExtractor) {
         handlerMethods.forEach((mappingInfo, handlerMethod) -> {

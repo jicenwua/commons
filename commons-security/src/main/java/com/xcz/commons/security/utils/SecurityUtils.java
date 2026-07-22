@@ -12,11 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * 安全上下文与请求 Token 读取工具。
- * <p>
- * {@link #getLoginUser()} 等依赖 {@link SecurityContextHolder}，适用于 Servlet 业务线程
- * （由 {@link com.xcz.commons.security.interceptor.HeaderAuthenticationFilter} 写入上下文）。
- * Reactive 环境（Gateway）请在响应式链内通过 {@code ReactiveSecurityContextHolder} 获取认证信息。
- * </p>
  */
 public class SecurityUtils {
 
@@ -28,9 +23,7 @@ public class SecurityUtils {
     }
 
     /**
-     * 获取当前登录用户（{@link LoginUser} 作为 Authentication 的 principal）。
-     *
-     * @throws ArithmeticException 未登录或 principal 为空时抛出，与认证过滤器错误语义一致
+     * 获取当前登录用户。
      */
     public static LoginUser getLoginUser() {
         LoginUser principal = (LoginUser) getAuthentication().getPrincipal();
@@ -68,10 +61,7 @@ public class SecurityUtils {
     }
 
     /**
-     * 从 Reactive 请求头 {@code authorization} 中解析 JWT token。
-     * <p>
-     * 支持 {@code Bearer xxx} 与裸 token 两种格式，供 Gateway 等 WebFlux 过滤器使用。
-     * </p>
+     * 从 Reactive 请求头解析 JWT token。
      */
     public static String getToken(ServerHttpRequest request) {
         String header = request.getHeaders().getFirst(SecurityConstants.AUTHORIZATION_HEADER);
@@ -82,10 +72,7 @@ public class SecurityUtils {
     }
 
     /**
-     * 从 Servlet 请求头 {@code authorization} 中解析 JWT token。
-     * <p>
-     * 支持 {@code Bearer xxx} 与裸 token 两种格式，供业务微服务认证过滤器使用。
-     * </p>
+     * 从 Servlet 请求头解析 JWT token。
      */
     public static String getToken(HttpServletRequest request) {
         String token = request.getHeader(SecurityConstants.AUTHORIZATION_HEADER);
