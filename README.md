@@ -21,6 +21,7 @@
 | [commons-database](./commons-database/README.md) | MyBatis-Plus + Druid + 动态数据源 | 关系型数据库访问 |
 | [commons-oss](./commons-oss/README.md) | 阿里云 OSS 文件上传 | 按需引入 |
 | [commons-mongodb](./commons-mongodb/README.md) | MongoDB 客户端与连接池配置 | 按需引入 |
+| [commons-protobuf](./commons-protobuf/README.md) | 注解驱动 Protobuf 运行时序列化与 Schema 生成 | 按需引入 |
 
 ## 模块依赖关系
 
@@ -35,6 +36,7 @@ commons-security      │
 commons-database      （独立）
 commons-oss           （独立）
 commons-mongodb       （独立）
+commons-protobuf      （独立）
 ```
 
 ## 快速开始

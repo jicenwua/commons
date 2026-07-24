@@ -13,6 +13,7 @@
         <module name="commons-oss" />
         <module name="commons-core" />
         <module name="commons-database" />
+        <module name="commons-protobuf" />
       </profile>
     </annotationProcessing>
   </component>
@@ -23,6 +24,7 @@
       <module name="commons-log" options="-parameters" />
       <module name="commons-mongodb" options="-parameters" />
       <module name="commons-oss" options="-parameters" />
+      <module name="commons-protobuf" options="-parameters" />
       <module name="commons-redis" options="-parameters" />
       <module name="commons-security" options="-parameters" />
     </option>

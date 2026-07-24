@@ -23,6 +23,7 @@
         <module>commons-redis</module>
         <module>commons-database</module>
         <module>commons-mongodb</module>
+        <module>commons-protobuf</module>
     </modules>
 
     <properties>
@@ -43,6 +44,8 @@
         <user-agent-utils.version>1.21</user-agent-utils.version>
         <aliyun-oss.version>3.17.4</aliyun-oss.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <protobuf.version>3.25.5</protobuf.version>
+        <reflections.version>0.10.2</reflections.version>
     </properties>
 
     <dependencyManagement>
@@ -91,6 +94,23 @@
                 <groupId>com.xcz.commons</groupId>
                 <artifactId>commons-mongodb</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.xcz.commons</groupId>
+                <artifactId>commons-protobuf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${reflections.version}</version>
             </dependency>
 
             <dependency>
