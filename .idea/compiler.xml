@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="commons-log" />
+        <module name="commons-excel" />
         <module name="commons-mongodb" />
         <module name="commons-security" />
         <module name="commons-redis" />
@@ -21,6 +22,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="commons-core" options="-parameters" />
       <module name="commons-database" options="-parameters" />
+      <module name="commons-excel" options="-parameters" />
       <module name="commons-log" options="-parameters" />
       <module name="commons-mongodb" options="-parameters" />
       <module name="commons-oss" options="-parameters" />
