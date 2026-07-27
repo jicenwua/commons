@@ -2,6 +2,7 @@ package com.xcz.commons.excel;
 
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.xcz.commons.excel.support.CellValueConverter;
 import com.xcz.commons.excel.database.annotation.ExcelField;
 import com.xcz.commons.excel.support.ExcelSupport;
 import lombok.Data;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -36,23 +36,20 @@ class ExcelSupportCollectionTest {
 
     @Test
     void parseListSetMapCellFormats() throws Exception {
-        Method method = ExcelSupport.class.getDeclaredMethod("convertFieldValue", Object.class, Field.class);
-        method.setAccessible(true);
-
         Field listField = CollectionHolder.class.getDeclaredField("items");
         Field setField = CollectionHolder.class.getDeclaredField("tags");
         Field mapField = CollectionHolder.class.getDeclaredField("mapping");
 
         @SuppressWarnings("unchecked")
-        List<String> list = (List<String>) method.invoke(null, "{gold,silver}", listField);
+        List<String> list = (List<String>) CellValueConverter.convertFieldValue("{gold,silver}", listField);
         assertEquals(List.of("gold", "silver"), list);
 
         @SuppressWarnings("unchecked")
-        Set<Integer> set = (Set<Integer>) method.invoke(null, "{1,2,3}", setField);
+        Set<Integer> set = (Set<Integer>) CellValueConverter.convertFieldValue("{1,2,3}", setField);
         assertEquals(Set.of(1, 2, 3), set);
 
         @SuppressWarnings("unchecked")
-        Map<Long, String> map = (Map<Long, String>) method.invoke(null, "{1:方片,2:梅花}", mapField);
+        Map<Long, String> map = (Map<Long, String>) CellValueConverter.convertFieldValue("{1:方片,2:梅花}", mapField);
         assertEquals("方片", map.get(1L));
         assertEquals("梅花", map.get(2L));
     }
