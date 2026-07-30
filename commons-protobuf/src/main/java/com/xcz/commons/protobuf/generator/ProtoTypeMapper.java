@@ -14,11 +14,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * Java 字段类型与 Protobuf 字段类型的映射工具。
+ */
 public final class ProtoTypeMapper {
 
     private ProtoTypeMapper() {
     }
 
+    /**
+     * 将 Java 字段名转为 proto 字段名（支持 @ProtobufField.name 覆盖）。
+     */
     public static String toProtoFieldName(Field field) {
         ProtobufField annotation = field.getAnnotation(ProtobufField.class);
         if (annotation != null && !annotation.name().isBlank()) {
@@ -31,6 +37,9 @@ public final class ProtoTypeMapper {
         return type.getSimpleName();
     }
 
+    /**
+     * 分析 Java 字段，返回 proto 字段名与类型描述（如 repeated string、map<string, int32>）。
+     */
     public static ProtoFieldDescriptor describeField(Field field) {
         if (field.getAnnotation(ProtobufField.class) != null
                 && field.getAnnotation(ProtobufField.class).ignore()) {
@@ -60,6 +69,7 @@ public final class ProtoTypeMapper {
         return new ProtoFieldDescriptor(toProtoFieldName(field), toProtoScalarOrMessage(rawType), field);
     }
 
+    /** 将 Java 类型映射为 proto 标量或 message 类型名 */
     private static String toProtoScalarOrMessage(Class<?> type) {
         if (type == String.class || type == BigDecimal.class
                 || type == LocalDateTime.class || type == LocalDate.class || type == Date.class) {
@@ -199,6 +209,9 @@ public final class ProtoTypeMapper {
         return result.toString();
     }
 
+    /**
+     * proto 字段描述：字段名、proto 类型字符串、原始 Java 字段。
+     */
     public record ProtoFieldDescriptor(String protoName, String protoType, Field javaField) {
     }
 }

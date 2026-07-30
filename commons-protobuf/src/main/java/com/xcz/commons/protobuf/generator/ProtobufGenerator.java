@@ -69,6 +69,9 @@ public final class ProtobufGenerator {
         return generate(scanPackages, "target/generated-proto", null);
     }
 
+    /**
+     * 构建扫描配置对象。
+     */
     public static ProtobufScanConfig buildConfig(
             List<String> scanPackages,
             String outputDirectory,
@@ -85,6 +88,9 @@ public final class ProtobufGenerator {
         return config;
     }
 
+    /**
+     * 将输出目录解析为绝对路径。
+     */
     public static Path resolveOutputPath(String outputDirectory) {
         return Path.of(outputDirectory).toAbsolutePath().normalize();
     }

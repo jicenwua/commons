@@ -128,6 +128,7 @@ public final class ExcelSupport {
      */
     public static void createExcel(String path, Class<?> configClass) {
         String dir = getDir(path);
+        //获取文件注解
         ExcelBase annotation = configClass.getAnnotation(ExcelBase.class);
         if (annotation == null) {
             throw new IllegalArgumentException("该类不是Excel注释类");
@@ -139,7 +140,9 @@ public final class ExcelSupport {
 
         File destFile = new File(excelPath);
         List<List<Object>> init = new ArrayList<>();
+        //如果文件不存在，则创建，否则返回
         if (!destFile.exists()) {
+            //获取最新版本文件，获取历史版本信息
             File lastVersionFile = getLastVersionFile(dir, configClass);
             if (lastVersionFile != null) {
                 init.addAll(lastVersionConfig(lastVersionFile));
@@ -148,7 +151,7 @@ public final class ExcelSupport {
             log.info("Excel文件已经存在：{}", excelPath);
             return;
         }
-
+        //创建excel固定初始化信息
         ExcelWriter writer = ExcelUtil.getWriter(destFile);
         writer.setSheet(ExcelContent.DEFAULT_SHEET);
         List<Object> titles = new ArrayList<>();
@@ -179,12 +182,14 @@ public final class ExcelSupport {
      * @param configClass 配置类
      */
     public static void createExcel(ExcelWriter writer, Class<?> configClass) {
+        //遍历配置类的变量进行配置
         for (Field field : configClass.getDeclaredFields()) {
+            //获取变量注解
             ExcelSheet annotation = field.getAnnotation(ExcelSheet.class);
             if (annotation == null) {
                 continue;
             }
-
+            //设置写入的sheet
             writer.setSheet(annotation.sheet());
             String groupTitle = StringUtils.hasText(annotation.comment()) ? annotation.comment() : field.getName();
             int startColumn = annotation.startList();
@@ -210,18 +215,20 @@ public final class ExcelSupport {
      */
     private static void writeMapSheet(ExcelWriter writer, Field field, ExcelSheet annotation,
                                       String groupTitle, int startColumn, int headerRow) {
+        //获取具体泛型类型
         List<Class<?>> types = ClassAnalyseSupport.analyse(field);
         Class<?> keyType = types.get(0);
         Class<?> valueType = types.get(1);
+        //判读那是否都为基本类型
         if (!ClassAnalyseSupport.isBasicType(keyType) || !ClassAnalyseSupport.isBasicType(valueType)) {
             throw new IllegalArgumentException(
                     "Map 的 key 和 value 必须为基本类型，字段: " + field.getName()
                             + "，当前: " + keyType.getSimpleName() + " -> " + valueType.getSimpleName());
         }
-
+        //合并标题栏
         int endColumn = startColumn + 1;
         writer.merge(0, 0, startColumn, endColumn, groupTitle, true);
-
+        //获取键和值的表头并写入对应的单元格
         String keyLabel = StringUtils.hasText(annotation.mapKey()) ? annotation.mapKey() : field.getName();
         String valueLabel = StringUtils.hasText(annotation.mapValue()) ? annotation.mapValue() : field.getName();
         writer.writeCellValue(startColumn, headerRow, keyLabel, true);
@@ -241,15 +248,16 @@ public final class ExcelSupport {
      */
     private static void writeListSheet(ExcelWriter writer, Field field, String groupTitle,
                                        int startColumn, int headerRow) {
+        //获取具体泛型类型
         Class<?> elementType = ClassAnalyseSupport.analyse(field).getFirst();
-
+        //如果是基本类型，直接该列写入数据
         if (ClassAnalyseSupport.isBasicType(elementType)) {
             writer.writeCellValue(startColumn, 0, groupTitle, true);
             writer.writeCellValue(startColumn, headerRow, field.getName(), true);
             writer.setColumnWidth(startColumn, 15);
             return;
         }
-
+        //获取有注解变量
         List<Field> excelFields = Arrays.stream(elementType.getDeclaredFields())
                 .filter(it -> it.getAnnotation(ExcelField.class) != null)
                 .sorted(Comparator.comparingInt(it -> it.getAnnotation(ExcelField.class).index()))
@@ -257,10 +265,10 @@ public final class ExcelSupport {
         if (excelFields.isEmpty()) {
             return;
         }
-
+        //合并标题行
         int endColumn = startColumn + excelFields.size() - 1;
         writer.merge(0, 0, startColumn, endColumn, groupTitle, true);
-
+        //逐个设置表头
         for (Field excelField : excelFields) {
             ExcelField filed = excelField.getAnnotation(ExcelField.class);
             int col = startColumn + filed.index() - 1;
@@ -317,6 +325,7 @@ public final class ExcelSupport {
      */
     public static String resolveExcelPath(String path, Class<?> configClass) {
         String dir = getDir(path);
+        //获取配置注解
         ExcelBase annotation = configClass.getAnnotation(ExcelBase.class);
         if (annotation == null) {
             throw new IllegalArgumentException("该类不是Excel类: " + configClass.getName());
@@ -367,6 +376,7 @@ public final class ExcelSupport {
      * @param configClass 配置类
      */
     private static void readExcelSheet(ExcelReader reader, Object instance, Class<?> configClass) {
+        //逐个处理字段的数据读取
         for (Field field : configClass.getDeclaredFields()) {
             ExcelSheet annotation = field.getAnnotation(ExcelSheet.class);
             if (annotation == null) {
@@ -395,13 +405,16 @@ public final class ExcelSupport {
      * @return Map 数据
      */
     private static Map<Object, Object> readExcelMap(ExcelReader reader, Field field, ExcelSheet annotation) {
+        //获取起始列以及对应的表头名
         int startColumn = annotation.startList();
         List<Class<?>> types = ClassAnalyseSupport.analyse(field);
         Class<?> keyType = types.get(0);
         Class<?> valueType = types.get(1);
 
+        //从第二行开始读取数据
         List<List<Object>> rows = reader.read(DATA_START_ROW);
         Map<Object, Object> map = new LinkedHashMap<>();
+        //逐行转换数据
         for (List<Object> row : rows) {
             if (isEmptyRow(row, startColumn, startColumn + 1)) {
                 break;
@@ -519,6 +532,12 @@ public final class ExcelSupport {
         return row.get(columnIndex);
     }
 
+    /**
+     * 判断什么时候
+     * @param row 行
+     * @param columns   列
+     * @return  是否为空行
+     */
     private static boolean isEmptyRow(List<Object> row, int... columns) {
         for (int column : columns) {
             if (!CellValueConverter.isBlank(getCell(row, column))) {

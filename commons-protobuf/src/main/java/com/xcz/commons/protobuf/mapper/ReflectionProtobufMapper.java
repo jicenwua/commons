@@ -28,17 +28,27 @@ public class ReflectionProtobufMapper {
     public ReflectionProtobufMapper(Class<?> entityClass, ProtobufMapperRegistry registry) {
         this.entityClass = entityClass;
         this.registry = registry;
+        // 运行时动态构建 Descriptor，无需 protoc 生成类
         this.descriptor = EntityDescriptorFactory.buildDescriptor(entityClass);
     }
 
+    /**
+     * 返回绑定的实体类型。
+     */
     public Class<?> entityClass() {
         return entityClass;
     }
 
+    /**
+     * 返回该实体对应的 Protobuf Descriptor。
+     */
     public Descriptors.Descriptor descriptor() {
         return descriptor;
     }
 
+    /**
+     * 将 Java 实体转为 Protobuf Message（DynamicMessage）。
+     */
     public Message toProto(Object entity) {
         if (entity == null) {
             return null;
@@ -67,6 +77,9 @@ public class ReflectionProtobufMapper {
         return builder.build();
     }
 
+    /**
+     * 将 Protobuf Message 转为 Java 实体。
+     */
     @SuppressWarnings("unchecked")
     public <T> T fromProto(Message message) {
         if (message == null) {
@@ -96,6 +109,7 @@ public class ReflectionProtobufMapper {
         }
     }
 
+    /** 按字段类型写入 Builder：区分 map、repeated、单值 */
     private void setBuilderValue(
             DynamicMessage.Builder builder,
             Descriptors.FieldDescriptor protoField,
@@ -131,6 +145,7 @@ public class ReflectionProtobufMapper {
         builder.setField(protoField, convertToProtoElement(value, field.getType()));
     }
 
+    /** 将单个 Java 元素转为 Protobuf 可写入值（嵌套实体递归映射） */
     private Object convertToProtoElement(Object value, Class<?> targetType) {
         if (value == null) {
             return null;
@@ -144,6 +159,7 @@ public class ReflectionProtobufMapper {
         return ScalarConverter.toProtoScalar(value, targetType);
     }
 
+    /** 将 Protobuf 字段值转为 Java 字段值 */
     private Object convertFromProtoValue(Object protoValue, Field field, Descriptors.FieldDescriptor protoField) {
         if (protoField.isMapField()) {
             Map<Object, Object> result = new LinkedHashMap<>();

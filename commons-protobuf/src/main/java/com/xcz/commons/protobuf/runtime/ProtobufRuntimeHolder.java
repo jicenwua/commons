@@ -12,10 +12,16 @@ public final class ProtobufRuntimeHolder {
     private ProtobufRuntimeHolder() {
     }
 
+    /**
+     * 将 Spring 托管的 Runtime 绑定到全局 Holder，供 Kafka Serializer 等非 Spring 组件使用。
+     */
     public static void bind(ProtobufRuntime protobufRuntime) {
         runtime = protobufRuntime;
     }
 
+    /**
+     * 获取已绑定的 Runtime，未初始化时抛出异常。
+     */
     public static ProtobufRuntime require() {
         ProtobufRuntime current = runtime;
         if (current == null) {
@@ -25,6 +31,9 @@ public final class ProtobufRuntimeHolder {
         return current;
     }
 
+    /**
+     * 优先返回已绑定的 Runtime；否则根据 Kafka 等中间件传入的 configs 临时创建。
+     */
     public static ProtobufRuntime getOrCreate(Map<String, ?> configs) {
         ProtobufRuntime current = runtime;
         if (current != null) {

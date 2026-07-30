@@ -35,12 +35,17 @@ public final class ProtobufRuntime {
         return new Builder();
     }
 
+    /**
+     * 从 Map 配置构建 Runtime，供 Kafka Serializer/Deserializer 等非 Spring 场景使用。
+     */
     public static ProtobufRuntime fromConfig(Map<String, ?> configs) {
         Builder builder = builder();
+        // 扫描包
         Object packages = configs.get(SCAN_PACKAGES_KEY);
         if (packages != null) {
             builder.scanPackages(parseLines(packages.toString()));
         }
+        // 显式注册类全名
         Object classes = configs.get(SCAN_CLASSES_KEY);
         if (classes != null) {
             builder.scanClasses(parseLines(classes.toString()));
@@ -56,6 +61,7 @@ public final class ProtobufRuntime {
         if (entity != null) {
             builder.registerClassName(entity.toString());
         }
+        // 路由映射：route=entityClassName
         Object routeMapping = configs.get(ROUTE_MAPPING_KEY);
         if (routeMapping == null) {
             routeMapping = configs.get(TOPIC_MAPPING_KEY);
@@ -77,6 +83,9 @@ public final class ProtobufRuntime {
         return runtime;
     }
 
+    /**
+     * 将 Java 实体序列化为 Protobuf 二进制。
+     */
     @SuppressWarnings("unchecked")
     public byte[] serialize(Object entity) {
         if (entity == null) {
@@ -86,6 +95,9 @@ public final class ProtobufRuntime {
         return codec.encode(entity);
     }
 
+    /**
+     * 将二进制反序列化为指定类型的 Java 实体。
+     */
     @SuppressWarnings("unchecked")
     public <T> T deserialize(byte[] data, Class<T> entityClass) {
         if (data == null) {
@@ -94,6 +106,9 @@ public final class ProtobufRuntime {
         return (T) codec(entityClass).decode(data);
     }
 
+    /**
+     * 按路由键（Topic / routingKey）反序列化，路由与实体在 @ProtobufMessage(topic) 或配置中绑定。
+     */
     public Object deserializeByRoute(String route, byte[] data) {
         if (data == null) {
             return null;
@@ -106,6 +121,9 @@ public final class ProtobufRuntime {
         return deserialize(data, entityClass);
     }
 
+    /**
+     * 获取实体类型对应的编解码器。
+     */
     @SuppressWarnings("unchecked")
     public <T> ProtobufCodec<T> codec(Class<T> entityClass) {
         ProtobufCodec<T> codec = (ProtobufCodec<T>) codecByEntity.get(entityClass);
@@ -115,10 +133,14 @@ public final class ProtobufRuntime {
         return codec;
     }
 
+    /**
+     * 判断实体类型是否已注册。
+     */
     public boolean isRegistered(Class<?> entityClass) {
         return codecByEntity.containsKey(entityClass);
     }
 
+    /** 注册实体：创建 Codec，并按注解绑定路由 */
     private void registerEntity(Class<?> entityClass) {
         if (codecByEntity.containsKey(entityClass)) {
             bindRouteFromAnnotation(entityClass);
@@ -129,6 +151,7 @@ public final class ProtobufRuntime {
         bindRouteFromAnnotation(entityClass);
     }
 
+    /** 从 @ProtobufMessage(topic) 读取路由并绑定到实体类 */
     private void bindRouteFromAnnotation(Class<?> entityClass) {
         ProtobufMessage annotation = entityClass.getAnnotation(ProtobufMessage.class);
         if (annotation != null && !annotation.topic().isBlank()) {
@@ -136,6 +159,7 @@ public final class ProtobufRuntime {
         }
     }
 
+    /** 手动绑定路由键与实体类 */
     private void bindRoute(String route, String entityClassName) {
         try {
             Class<?> entityClass = Class.forName(entityClassName);
@@ -146,6 +170,7 @@ public final class ProtobufRuntime {
         }
     }
 
+    /** 将逗号/换行分隔的配置文本解析为列表 */
     private static List<String> parseLines(String text) {
         return Arrays.stream(text.split("[\\r\\n,;]+"))
                 .map(String::trim)
@@ -157,10 +182,12 @@ public final class ProtobufRuntime {
 
         private final ProtobufRuntime runtime = new ProtobufRuntime();
 
+        /** 扫描包下所有 @ProtobufMessage 类并注册 */
         public Builder scanPackages(String... packages) {
             return scanPackages(List.of(packages));
         }
 
+        /** 扫描包下所有 @ProtobufMessage 类并注册 */
         public Builder scanPackages(List<String> packages) {
             Set<Class<?>> classes = ClassScanner.scanPackages(packages);
             classes.stream()
@@ -169,20 +196,24 @@ public final class ProtobufRuntime {
             return this;
         }
 
+        /** 按类全名显式注册实体 */
         public Builder scanClasses(String... classNames) {
             return scanClasses(List.of(classNames));
         }
 
+        /** 按类全名显式注册实体 */
         public Builder scanClasses(List<String> classNames) {
             classNames.forEach(this::registerClassName);
             return this;
         }
 
+        /** 注册单个实体类 */
         public Builder register(Class<?> entityClass) {
             runtime.registerEntity(entityClass);
             return this;
         }
 
+        /** 按类全名注册实体 */
         public Builder registerClassName(String entityClassName) {
             try {
                 return register(Class.forName(entityClassName));
@@ -191,11 +222,13 @@ public final class ProtobufRuntime {
             }
         }
 
+        /** 手动绑定路由键与实体类全名 */
         public Builder route(String route, String entityClassName) {
             runtime.bindRoute(route, entityClassName);
             return this;
         }
 
+        /** 构建 Runtime，至少需注册一个实体 */
         public ProtobufRuntime build() {
             if (runtime.codecByEntity.isEmpty()) {
                 throw new IllegalStateException("未注册任何 @ProtobufMessage 实体");

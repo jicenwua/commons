@@ -15,8 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 从 @ProtobufMessage 实体反射生成 .proto 文件内容。
+ */
 public class ProtoSchemaGenerator {
 
+    /**
+     * 扫描配置中的包并生成 proto 文件名 → 内容 的映射（不写磁盘）。
+     */
     public Map<String, String> generate(ProtobufScanConfig config) {
         Set<Class<?>> classes = ClassScanner.scanPackages(config.getScanPackages());
         if (classes.isEmpty()) {
@@ -37,6 +43,9 @@ public class ProtoSchemaGenerator {
         return protoFiles;
     }
 
+    /**
+     * 生成 proto 文件并写入配置的输出目录。
+     */
     public void generateToDirectory(ProtobufScanConfig config) throws IOException {
         Path outputDir = Path.of(config.getOutputDirectory());
         Files.createDirectories(outputDir);
@@ -46,6 +55,7 @@ public class ProtoSchemaGenerator {
         }
     }
 
+    /** 拼装单个 .proto 文件文本（含 syntax、java_package、enum、message） */
     private String buildProtoFile(List<Class<?>> classes, String javaPackage) {
         StringBuilder sb = new StringBuilder();
         sb.append("syntax = \"proto3\";\n\n");
@@ -69,6 +79,7 @@ public class ProtoSchemaGenerator {
         return sb.toString();
     }
 
+    /** 追加 enum 定义到 proto 文本 */
     private void appendEnum(StringBuilder sb, Class<?> enumType) {
         ProtobufMessage annotation = enumType.getAnnotation(ProtobufMessage.class);
         String enumName = annotation != null && !annotation.name().isBlank()
@@ -86,6 +97,7 @@ public class ProtoSchemaGenerator {
         sb.append("}\n");
     }
 
+    /** 追加 message 定义到 proto 文本 */
     private void appendMessage(StringBuilder sb, Class<?> messageType) {
         ProtobufMessage annotation = messageType.getAnnotation(ProtobufMessage.class);
         String messageName = annotation != null && !annotation.name().isBlank()

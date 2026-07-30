@@ -17,6 +17,9 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnProperty(prefix = "protobuf", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ProtobufAutoConfiguration {
 
+    /**
+     * 根据 yaml 配置构建 ProtobufRuntime，并绑定到全局 Holder。
+     */
     @Bean
     @ConditionalOnMissingBean
     public ProtobufRuntime protobufRuntime(ProtobufProperties properties) {

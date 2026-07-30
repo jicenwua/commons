@@ -26,6 +26,9 @@ public class ProtobufScanConfig {
     /** .proto 文件输出目录，默认 target/generated-proto */
     String outputDirectory = "target/generated-proto";
 
+    /**
+     * 解析 protoc 生成 Java 类的包名，未配置时默认「第一个扫描包 + .proto」。
+     */
     public String resolveProtoJavaPackage() {
         if (protoJavaPackage != null && !protoJavaPackage.isBlank()) {
             return protoJavaPackage;

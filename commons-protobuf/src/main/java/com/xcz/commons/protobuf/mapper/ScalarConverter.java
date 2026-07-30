@@ -7,11 +7,17 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * Java 标量类型与 Protobuf 标量值之间的转换工具。
+ */
 final class ScalarConverter {
 
     private ScalarConverter() {
     }
 
+    /**
+     * 将 Java 标量值转为 Protobuf 可写入的标量（如 BigDecimal → String）。
+     */
     static Object toProtoScalar(Object value, Class<?> targetType) {
         if (value instanceof BigDecimal decimal) {
             return decimal.toPlainString();
@@ -28,6 +34,9 @@ final class ScalarConverter {
         return value;
     }
 
+    /**
+     * 将 Protobuf 标量值转为 Java 目标类型。
+     */
     static Object fromProtoScalar(Object protoValue, Class<?> targetType) {
         if (protoValue == null) {
             return null;
