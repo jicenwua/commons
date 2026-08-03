@@ -38,7 +38,7 @@ public class SecurityUtils {
      */
     public static boolean isLogin() {
         HttpServletRequest request = ServletUtils.getRequest();
-        if (request == null || StringUtils.isEmpty(getToken(request))) {
+        if (StringUtils.isEmpty(getToken(request))) {
             return false;
         }
         Authentication authentication = getAuthentication();

@@ -93,7 +93,7 @@ public class TokenService {
             //根据用户新角色获取对应的权限进行设置
             Map<String, Set<String>> permissions = PermissionUtils.getRoles();
             // 创建可修改的 Map 副本，避免 UnsupportedOperationException
-            Map<String, Set<String>> userPermissions = new HashMap<>(permissions.size());
+            Map<String, Set<String>> userPermissions = new HashMap<>(roleChange.size());
             roleChange.forEach(role -> {
                 userPermissions.put(role, permissions.get(role));
             });

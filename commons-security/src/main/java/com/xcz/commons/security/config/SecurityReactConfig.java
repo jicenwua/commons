@@ -9,8 +9,12 @@ import com.xcz.commons.security.support.ReleasePathCollector;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.reactive.result.method.RequestMappingInfo;
+import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -20,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Reactive 环境 Security 自动配置（Gateway 等）。
@@ -29,6 +34,23 @@ import java.util.List;
 @EnableMethodSecurity
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 public class SecurityReactConfig {
+
+    /**
+     * 扫描 @Release 免认证路径。
+     */
+    @Bean
+    public ReleasePathCollector releasePathCollector(ApplicationContext applicationContext) {
+        RequestMappingHandlerMapping handlerMapping = applicationContext.getBean(
+                "requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+        ReleasePathCollector collector = new ReleasePathCollector();
+        collector.collect(handlerMapping.getHandlerMethods(), info -> {
+            RequestMappingInfo mappingInfo = (RequestMappingInfo) info;
+            return mappingInfo.getPatternsCondition().getPatterns().stream()
+                    .map(PathPattern::getPatternString)
+                    .collect(Collectors.toSet());
+        });
+        return collector;
+    }
 
     @Bean
     public HeadReactAuthenticationFilter headReactAuthenticationFilter(

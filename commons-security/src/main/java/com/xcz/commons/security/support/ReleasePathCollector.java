@@ -46,6 +46,11 @@ public class ReleasePathCollector {
                 handlerMethod.getMethod().getName());
     }
 
+    /**
+     * 是否有注解
+     * @param handlerMethod 方法元信息
+     * @return  是否拥有该注解
+     */
     private static boolean hasRelease(HandlerMethod handlerMethod) {
         return AnnotatedElementUtils.hasAnnotation(handlerMethod.getMethod(), Release.class)
                 || AnnotatedElementUtils.hasAnnotation(handlerMethod.getBeanType(), Release.class);

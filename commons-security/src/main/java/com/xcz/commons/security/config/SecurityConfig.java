@@ -11,8 +11,11 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,6 +38,19 @@ import java.util.List;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
 public class SecurityConfig {
+
+    /**
+     * 扫描 @Release 免认证路径。
+     */
+    @Bean
+    public ReleasePathCollector releasePathCollector(ApplicationContext applicationContext) {
+        RequestMappingHandlerMapping handlerMapping = applicationContext.getBean(
+                "requestMappingHandlerMapping", RequestMappingHandlerMapping.class);
+        ReleasePathCollector collector = new ReleasePathCollector();
+        collector.collect(handlerMapping.getHandlerMethods(),
+                info -> ((RequestMappingInfo) info).getPatternValues());
+        return collector;
+    }
 
     /**
      * 创建请求登录验证拦截

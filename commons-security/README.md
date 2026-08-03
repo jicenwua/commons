@@ -138,10 +138,8 @@ Long userId = SecurityUtils.getUserId();
 | 类 | 条件 | 关键 Bean |
 |----|------|----------|
 | `SecurityCoreAutoConfiguration` | 始终 | `JwtUtils`、`TokenService`、`PermissionUtils`、`PermissionExpression` |
-| `ServletReleasePathCollectorAutoConfiguration` | Servlet | `ReleasePathCollector` |
-| `ReactiveReleasePathCollectorAutoConfiguration` | Reactive | `ReleasePathCollector` |
-| `SecurityConfig` | Servlet | `HeaderAuthenticationFilter`、`SecurityFilterChain`、`GlobalExceptionHandler` |
-| `SecurityReactConfig` | Reactive | `HeadReactAuthenticationFilter`、`SecurityWebFilterChain` |
+| `SecurityConfig` | Servlet | `ReleasePathCollector`、`HeaderAuthenticationFilter`、`SecurityFilterChain`、`GlobalExceptionHandler` |
+| `SecurityReactConfig` | Reactive | `ReleasePathCollector`、`HeadReactAuthenticationFilter`、`SecurityWebFilterChain` |
 
 ## 主要类
 
