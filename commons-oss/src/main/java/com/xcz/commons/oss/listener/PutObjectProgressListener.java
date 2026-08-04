@@ -4,16 +4,22 @@ import com.aliyun.oss.event.ProgressEvent;
 import com.aliyun.oss.event.ProgressEventType;
 import com.aliyun.oss.event.ProgressListener;
 import com.xcz.commons.oss.service.UploadService;
+import lombok.Getter;
 
 /**
  * OSS文件上传进度监听器
  * 用于监听文件上传进度并回调通知
  */
+@Getter
 public class PutObjectProgressListener implements ProgressListener {
 
+    /***已上传字节**/
     private long bytesWritten = 0;
+    /***总字节**/
     private long totalBytes = -1;
+    /***是否成功**/
     private boolean succeed = false;
+
     private final UploadService.ProgressCallback progressCallback;
 
     /**
@@ -57,27 +63,4 @@ public class PutObjectProgressListener implements ProgressListener {
         }
     }
 
-    /**
-     * 判断上传是否成功
-     * @return true-成功，false-失败
-     */
-    public boolean isSucceed() {
-        return succeed;
-    }
-
-    /**
-     * 获取已上传字节数
-     * @return 已上传字节数
-     */
-    public long getBytesWritten() {
-        return bytesWritten;
-    }
-
-    /**
-     * 获取文件总字节数
-     * @return 文件总字节数
-     */
-    public long getTotalBytes() {
-        return totalBytes;
-    }
 }

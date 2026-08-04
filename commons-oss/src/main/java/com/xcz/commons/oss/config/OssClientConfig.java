@@ -28,11 +28,11 @@ public class OssClientConfig {
     public OSS ossClient() {
         DefaultCredentialProvider credentialsProvider = CredentialsProviderFactory.newDefaultCredentialProvider(ossProperties.getAccessKeyId(), ossProperties.getAccessKeySecret());
 
-        // 3. 配置 V4 签名
+        //配置 V4 签名
         ClientBuilderConfiguration clientBuilderConfiguration = new ClientBuilderConfiguration();
         clientBuilderConfiguration.setSignatureVersion(SignVersion.V4);
 
-        // 4. 构建并返回
+        //构建并返回
         return OSSClientBuilder.create()
                 .endpoint(ossProperties.getEndpoint())
                 .credentialsProvider(credentialsProvider)

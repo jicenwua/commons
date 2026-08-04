@@ -51,12 +51,18 @@ public class UploadServiceImpl implements UploadService {
     }
 
     /**
-     * 生成永久url
-     * @param path  保存i地址
-     * @return  url
+     * 生成永久访问 URL。配置了 domain（CDN/自定义域名）则优先使用，否则走 OSS 桶域名。
+     * @param path OSS objectKey
+     * @return 永久访问 url
      */
     public String getEnteralUrl(String path){
-        return "https://" +properties.getBucketName() + "."+ properties.getEndpoint() + "/" + path;
+        String domain = properties.getDomain();
+        if(StringUtils.isNullOrEmpty(domain)){
+            return "https://" + properties.getBucketName() + "." + properties.getEndpoint() + "/" + path;
+        }
+        // CDN / 自定义域名本身是完整 Host，不再拼接 endpoint
+        domain = domain.replaceFirst("^https?://", "").replaceAll("/$", "");
+        return "https://" + domain + "/" + path;
     }
 
     /**
@@ -248,7 +254,7 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 删除OSS中的文件
-     * @param path OSS中的存储路径（objectKey）
+     * @param path objectKey，或 OSS/CDN 完整 URL（会先解析为 objectKey）
      * @return true-删除成功或文件不存在，false-删除失败
      */
     @Override
@@ -258,22 +264,8 @@ public class UploadServiceImpl implements UploadService {
         }
 
         try {
-            // 假设你的域名包含 ".aliyuncs.com/"
-            if (path.startsWith("http://") || path.startsWith("https://")) {
-                // 获取域名后面的核心路径
-                String hostSuffix = ".aliyuncs.com/";
-                if (path.contains(hostSuffix)) {
-                    path = path.substring(path.indexOf(hostSuffix) + hostSuffix.length());
-                } else if (path.contains(properties.getBucketName())) {
-                    // 自定义域名情况的处理（如果绑定了自定义域名）
-                    path = path.substring(path.indexOf(properties.getBucketName()) + properties.getBucketName().length() + 1);
-                }
-            }
-
-            // 如果路径开头一不小心带了 "/"，也要去掉
-            if (path.startsWith("/")) {
-                path = path.substring(1);
-            }
+            // 删除始终打 OSS API，与访问链接是否走 CDN 无关；先把 URL 还原为 objectKey
+            path = toObjectKey(path);
 
             // 先检查文件是否存在
             if (!exists(path)) {
@@ -291,6 +283,50 @@ public class UploadServiceImpl implements UploadService {
             System.err.println("删除文件失败: " + path + ", 错误: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * 将 objectKey 或完整访问 URL（OSS 桶域名 / CDN 自定义域名）统一解析为 objectKey。
+     */
+    private String toObjectKey(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        path = path.trim();
+
+        // 已是相对路径，直接规范化
+        if (!path.startsWith("http://") && !path.startsWith("https://")) {
+            return path.startsWith("/") ? path.substring(1) : path;
+        }
+
+        String ossSuffix = ".aliyuncs.com/";
+        if (path.contains(ossSuffix)) {
+            // OSS 默认域名：https://bucket.oss-xxx.aliyuncs.com/objectKey
+            path = path.substring(path.indexOf(ossSuffix) + ossSuffix.length());
+        } else if (!StringUtils.isNullOrEmpty(properties.getDomain())) {
+            // CDN / 自定义域名：https://cdn.example.com/objectKey
+            String domain = properties.getDomain()
+                    .replaceFirst("^https?://", "")
+                    .replaceAll("/$", "");
+            String marker = "://" + domain + "/";
+            int idx = path.indexOf(marker);
+            if (idx >= 0) {
+                path = path.substring(idx + marker.length());
+            } else {
+                // 兜底：去掉协议和 Host
+                path = path.replaceFirst("^https?://[^/]+/", "");
+            }
+        } else {
+            // 未配置 domain 时的兜底解析
+            path = path.replaceFirst("^https?://[^/]+/", "");
+        }
+
+        // 去掉查询参数（预签名 URL 等）
+        int q = path.indexOf('?');
+        if (q >= 0) {
+            path = path.substring(0, q);
+        }
+        return path.startsWith("/") ? path.substring(1) : path;
     }
 
     /**
