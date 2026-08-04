@@ -24,7 +24,6 @@ public class OssClientConfig {
     @Resource
     private OssProperties ossProperties;
 
-    @Bean
     public OSS ossClient() {
         DefaultCredentialProvider credentialsProvider = CredentialsProviderFactory.newDefaultCredentialProvider(ossProperties.getAccessKeyId(), ossProperties.getAccessKeySecret());
 
@@ -42,7 +41,8 @@ public class OssClientConfig {
     }
 
     @Bean
-    public UploadService uploadService(OSS oss,OssProperties ossProperties) {
+    public UploadService uploadService(OssProperties ossProperties) {
+        Oss oss = ossClient();
         return new UploadServiceImpl(oss, ossProperties);
     }
 }
