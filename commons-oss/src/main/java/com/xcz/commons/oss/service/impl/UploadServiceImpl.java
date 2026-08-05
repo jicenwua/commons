@@ -1,7 +1,10 @@
 package com.xcz.commons.oss.service.impl;
 
+import com.aliyun.oss.HttpMethod;
 import com.aliyun.oss.OSS;
+import com.aliyun.oss.ServiceException;
 import com.aliyun.oss.common.utils.StringUtils;
+import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.UploadFileRequest;
@@ -16,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * OSS文件上传服务实现类
@@ -31,11 +34,12 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 获取文件的临时访问URL（带有效期）
+     *
      * @param objectKey OSS中的存储路径
      * @return 带有效期的预签名URL，过期后需重新生成
      */
     @Override
-    public String getUrl(String objectKey){
+    public String getUrl(String objectKey) {
         // 生成带有效期的预签名URL，用于安全访问OSS文件
         if (StringUtils.isNullOrEmpty(objectKey)) {
             return null;
@@ -52,12 +56,13 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 生成永久访问 URL。配置了 domain（CDN/自定义域名）则优先使用，否则走 OSS 桶域名。
+     *
      * @param path OSS objectKey
      * @return 永久访问 url
      */
-    public String getEnteralUrl(String path){
+    public String getEnteralUrl(String path) {
         String domain = properties.getDomain();
-        if(StringUtils.isNullOrEmpty(domain)){
+        if (StringUtils.isNullOrEmpty(domain)) {
             return "https://" + properties.getBucketName() + "." + properties.getEndpoint() + "/" + path;
         }
         // CDN / 自定义域名本身是完整 Host，不再拼接 endpoint
@@ -67,6 +72,7 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 简单上传文件（不带进度）
+     *
      * @param file 上传的文件
      * @param path OSS中的存储路径（可选，为空时自动生成UUID路径）
      * @return OSS中文件的存储路径（objectKey），可用于后续生成临时访问URL
@@ -79,17 +85,18 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 简单上传文件（不带进度）
+     *
      * @param inputStream 文件输入流
-     * @param fileName 文件名（用于生成存储路径）
-     * @param path OSS中的存储路径（可选，为空时自动生成UUID路径）
+     * @param fileName    文件名（用于生成存储路径）
+     * @param path        OSS中的存储路径（可选，为空时自动生成UUID路径）
      * @return OSS中文件的存储路径（objectKey），可用于后续生成临时访问URL
      */
     @Override
-    public String simpleUpload(InputStream inputStream, String fileName, String path){
+    public String simpleUpload(InputStream inputStream, String fileName, String path) {
         try {
-            if(path == null || path.isEmpty()){
+            if (path == null || path.isEmpty()) {
                 path = OssPathUtil.simpleUUidPath(fileName);
-            }else if(exists(path)) {
+            } else if (exists(path)) {
                 path = nonePath(path);
             }
 
@@ -105,20 +112,21 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 带进度回调的文件上传
-     * @param inputStream 文件输入流
-     * @param fileName 文件名
-     * @param fileSize 文件大小（字节）
-     * @param path OSS中的存储路径（可选，为空时自动生成日期目录路径）
+     *
+     * @param inputStream      文件输入流
+     * @param fileName         文件名
+     * @param fileSize         文件大小（字节）
+     * @param path             OSS中的存储路径（可选，为空时自动生成日期目录路径）
      * @param progressCallback 进度回调函数
      * @return OSS中文件的存储路径（objectKey），可用于后续生成临时访问URL
      */
     @Override
     public String uploadWithProgress(InputStream inputStream, String fileName, long fileSize, String path, ProgressCallback progressCallback) {
         try {
-            if(path == null || path.isEmpty()){
+            if (path == null || path.isEmpty()) {
                 // 根据文件名生成带日期目录的OSS存储路径
                 path = OssPathUtil.fileNameUUidPath(fileName);
-            }else if(exists(path)){
+            } else if (exists(path)) {
                 path = nonePath(path);
             }
 
@@ -146,8 +154,9 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 带进度回调的文件上传（MultipartFile便捷方法）
-     * @param file 上传的文件
-     * @param path OSS中的存储路径（可选，为空时自动生成日期目录路径）
+     *
+     * @param file             上传的文件
+     * @param path             OSS中的存储路径（可选，为空时自动生成日期目录路径）
      * @param progressCallback 进度回调函数
      * @return OSS中文件的存储路径（objectKey），可用于后续生成临时访问URL
      * @throws IOException IO异常
@@ -155,16 +164,17 @@ public class UploadServiceImpl implements UploadService {
     @Override
     public String uploadWithProgress(MultipartFile file, String path, ProgressCallback progressCallback) throws IOException {
         return uploadWithProgress(
-            file.getInputStream(),
-            file.getOriginalFilename(),
-            file.getSize(),
-            path,
-            progressCallback
+                file.getInputStream(),
+                file.getOriginalFilename(),
+                file.getSize(),
+                path,
+                progressCallback
         );
     }
 
     /**
      * 分片上传文件（支持 MultipartFile）
+     *
      * @param file 上传的文件
      * @param path OSS中的存储路径（可选，为空时自动生成日期目录路径）
      * @return OSS中文件的存储路径（objectKey）
@@ -176,19 +186,20 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 分片上传文件（支持 MultipartFile，可指定覆盖策略）
-     * @param file 上传的文件
-     * @param path OSS中的存储路径（可选，为空时自动生成日期目录路径）
+     *
+     * @param file      上传的文件
+     * @param path      OSS中的存储路径（可选，为空时自动生成日期目录路径）
      * @param overwrite 是否覆盖已存在的文件（true=覆盖，false=生成新文件名）
      * @return OSS中文件的存储路径（objectKey）
      */
     @Override
     public String uploadChunked(MultipartFile file, String path, boolean overwrite) {
         try {
-            if(path == null || path.isEmpty()){
+            if (path == null || path.isEmpty()) {
                 // 根据文件名生成带UUID的OSS存储路径（避免冲突）
                 path = OssPathUtil.fileNameUUidPath(file);
             } else if (!overwrite && exists(path)) {
-              path = nonePath( path);
+                path = nonePath(path);
             }
 
             ObjectMetadata meta = new ObjectMetadata();
@@ -233,13 +244,14 @@ public class UploadServiceImpl implements UploadService {
 
             // 返回文件的OSS存储路径
             return path;
-        }  catch (Throwable e) {
+        } catch (Throwable e) {
             throw new RuntimeException("分片上传失败：" + e.getMessage());
         }
     }
 
     /**
      * 检查文件是否已存在
+     *
      * @param objectKey OSS中的存储路径
      * @return true-文件存在，false-文件不存在
      */
@@ -254,6 +266,7 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 删除OSS中的文件
+     *
      * @param path objectKey，或 OSS/CDN 完整 URL（会先解析为 objectKey）
      * @return true-删除成功或文件不存在，false-删除失败
      */
@@ -331,21 +344,56 @@ public class UploadServiceImpl implements UploadService {
 
     /**
      * 生成不冲突的文件名
+     *
      * @param path 文件名
      * @return 生成的文件名
      */
-    private String nonePath(String path){
+    private String nonePath(String path) {
         int i1 = path.lastIndexOf("/");
         int i2 = path.lastIndexOf(".");
         String fileName = path.substring(i1 + 1, i2);
         String doc = path.substring(i1 + 1);
         String ext = path.substring(i2);
-        for(int i = 1;i <= 10 ; i++){
+        for (int i = 1; i <= 10; i++) {
             String newPath = path.replace(doc, fileName + "_" + i + ext);
-            if(!exists(newPath)){
+            if (!exists(newPath)) {
                 return newPath;
             }
         }
         throw new RuntimeException("过多同名文件");
+    }
+
+
+    /**
+     * 获取上传URL
+     * @param path  保存地址
+     * @retur   保存地址
+     */
+    public String uploadURL(String path){
+        return uploadUrl(path,null);
+    }
+
+    /**
+     * 获取上传URL
+     *
+     * @param path       保存地址
+     * @param expireTime URL有效时间
+     * @return 保存地址
+     */
+    public String uploadUrl(String path, Long expireTime) {
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(
+                properties.getBucketName(),
+                path,
+                HttpMethod.PUT
+        );
+        if (expireTime != null && expireTime > 0) {
+            Date expiration = new Date(System.currentTimeMillis() + expireTime);
+            request.setExpiration(expiration);
+        }else if (expireTime != null){
+            throw new ServiceException("上传文件URL有效时间小于0");
+        }
+
+        URL url = ossClient.generatePresignedUrl(request);
+        return url.toString();
     }
 }
