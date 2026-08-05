@@ -42,7 +42,7 @@ public class OssClientConfig {
 
     @Bean
     public UploadService uploadService(OssProperties ossProperties) {
-        Oss oss = ossClient();
+        OSS oss = ossClient();
         return new UploadServiceImpl(oss, ossProperties);
     }
 }
