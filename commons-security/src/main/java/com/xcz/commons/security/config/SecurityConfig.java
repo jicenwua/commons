@@ -111,7 +111,7 @@ public class SecurityConfig {
                     //获取所有忽略路径，对忽略路径进行放行
                     List<String> ignoreUrls = ReleasePathCollector.mergeIgnoreUrls(ignoreProperties, releasePathCollector);
                     if (!ignoreUrls.isEmpty()) {
-                        request.requestMatchers(ignoreUrls.toArray(new String[0])).permitAll();
+                        request.requestMatchers(ignoreUrls.toArray(new String[0])).permitAll(); //忽略的路径放行不进行权限校验
                     }
                     request.anyRequest().authenticated();
                 });

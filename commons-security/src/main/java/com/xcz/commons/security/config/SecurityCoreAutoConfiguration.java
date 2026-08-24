@@ -4,6 +4,7 @@ import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.service.TokenService;
 import com.xcz.commons.security.utils.JwtUtils;
 import com.xcz.commons.security.utils.PermissionUtils;
+import com.xcz.commons.security.utils.RoleUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,13 +20,12 @@ import org.springframework.context.annotation.Lazy;
 })
 public class SecurityCoreAutoConfiguration {
 
+    /**
+     * 懒加载token服务
+     * @param jwtUtils
+     * @return
+     */
     @Bean
-    public PermissionUtils permissionUtils() {
-        return new PermissionUtils();
-    }
-
-    @Bean
-    @Lazy
     public TokenService tokenService(JwtUtils jwtUtils) {
         if (jwtUtils.getSecret() == null || jwtUtils.getSecret().isBlank()
                 || jwtUtils.getExpiration() == null) {
@@ -35,8 +35,19 @@ public class SecurityCoreAutoConfiguration {
         return new TokenService(jwtUtils);
     }
 
+    /**
+     * 权限注解
+     */
     @Bean("ss")
     public PermissionExpression permissionExpression() {
         return new PermissionExpression();
+    }
+
+    /**
+     * 用户权限动态更新
+     */
+    @Bean
+    public PermissionUtils permissionUtils(){
+        return new PermissionUtils();
     }
 }

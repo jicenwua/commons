@@ -9,6 +9,7 @@ import com.xcz.commons.core.utils.StringUtils;
 import com.xcz.commons.core.web.vo.params.AjaxResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,83 +31,87 @@ public class GlobalReactiveExceptionHandler {
     }
 
     @ExceptionHandler(NotPermissionException.class)
-    public AjaxResult handleNotPermissionException(NotPermissionException e, ServerHttpRequest request,
-                                                   ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleNotPermissionException(NotPermissionException e, ServerHttpRequest request,
+                                                                   ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         String requestURI = request.getPath().value();
         log.error("请求地址'{}',权限码校验失败'{}'", requestURI, e.getMessage());
-        return AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"));
     }
 
     @ExceptionHandler(NotRoleException.class)
-    public AjaxResult handleNotRoleException(NotRoleException e, ServerHttpRequest request,
-                                             ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleNotRoleException(NotRoleException e, ServerHttpRequest request,
+                                                               ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         String requestURI = request.getPath().value();
         log.error("请求地址'{}',角色权限校验失败'{}'", requestURI, e.getMessage());
-        return AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"));
     }
 
     @ExceptionHandler(MethodNotAllowedException.class)
-    public AjaxResult handleMethodNotAllowedException(MethodNotAllowedException e, ServerHttpRequest request,
-                                                      ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleMethodNotAllowedException(MethodNotAllowedException e, ServerHttpRequest request,
+                                                                        ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         String requestURI = request.getPath().value();
         log.error("请求地址'{}',不支持'{}'请求", requestURI, e.getSupportedMethods());
-        return AjaxResult.error(e.getMessage());
+        return ResponseEntity.badRequest().body(AjaxResult.error(e.getMessage()));
     }
 
     @ExceptionHandler(ServiceException.class)
-    public AjaxResult handleServiceException(ServiceException e, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleServiceException(ServiceException e, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         log.error(e.getMessage(), e);
         Integer code = e.getCode();
-        return StringUtils.isNotNull(code) ? AjaxResult.error(code, e.getMessage()) : AjaxResult.error(e.getMessage());
+        return StringUtils.isNotNull(code) ?
+                ResponseEntity.status(code).body(AjaxResult.error(code, e.getMessage())) :
+                ResponseEntity.badRequest().body(AjaxResult.error(e.getMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public AjaxResult handleRuntimeException(RuntimeException e, ServerHttpRequest request,
-                                             ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleRuntimeException(RuntimeException e, ServerHttpRequest request,
+                                                             ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         String requestURI = request.getPath().value();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return AjaxResult.error(e.getMessage());
+        return ResponseEntity.internalServerError().body(AjaxResult.error(e.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public AjaxResult handleException(Exception e, ServerHttpRequest request, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleException(Exception e, ServerHttpRequest request, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         String requestURI = request.getPath().value();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return AjaxResult.error(e.getMessage());
+        return ResponseEntity.internalServerError().body(AjaxResult.error(e.getMessage()));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    public AjaxResult handleWebExchangeBindException(WebExchangeBindException e, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleWebExchangeBindException(WebExchangeBindException e, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         log.error(e.getMessage(), e);
         String message = e.getAllErrors().get(0).getDefaultMessage();
-        return AjaxResult.error(message);
+        return ResponseEntity.badRequest().body(AjaxResult.error(message));
     }
 
     @ExceptionHandler(BindException.class)
-    public AjaxResult handleBindException(BindException e, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleBindException(BindException e, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         log.error(e.getMessage(), e);
         String message = e.getAllErrors().get(0).getDefaultMessage();
-        return AjaxResult.error(message);
+        return ResponseEntity.badRequest().body(AjaxResult.error(message));
     }
 
     @ExceptionHandler(ServerWebInputException.class)
-    public AjaxResult handleServerWebInputException(ServerWebInputException e, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleServerWebInputException(ServerWebInputException e, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
         log.error("参数解析失败", e);
-        return AjaxResult.error("请求参数格式错误: " + e.getReason());
+        return ResponseEntity.badRequest().body(AjaxResult.error("请求参数格式错误: " + e.getReason()));
     }
 
     @ExceptionHandler(InnerAuthException.class)
-    public AjaxResult handleInnerAuthException(InnerAuthException e, ServerWebExchange exchange) {
+    public ResponseEntity<AjaxResult> handleInnerAuthException(InnerAuthException e, ServerWebExchange exchange) {
         recordRequestException(exchange, e);
-        return AjaxResult.error(e.getMessage());
+        return ResponseEntity.badRequest().body(AjaxResult.error(e.getMessage()));
     }
 }

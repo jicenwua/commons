@@ -1,6 +1,7 @@
 package com.xcz.commons.security.config;
 
 import com.xcz.commons.core.security.ReactiveSecurityChainFilter;
+import com.xcz.commons.security.aspect.InnerAuthAspect;
 import com.xcz.commons.security.config.properties.IgnoreProperties;
 import com.xcz.commons.security.exception.GlobalReactiveExceptionHandler;
 import com.xcz.commons.security.interceptor.HeadReactAuthenticationFilter;
@@ -60,6 +61,14 @@ public class SecurityReactConfig {
         return new HeadReactAuthenticationFilter(tokenService, ignoreProperties, releasePathCollector);
     }
 
+    /**
+     * 创建切片
+     */
+    @Bean
+    public InnerAuthAspect innerAuthAspect() {
+        return new InnerAuthAspect();
+    }
+
     @Bean
     public GlobalReactiveExceptionHandler globalReactiveExceptionHandler() {
         return new GlobalReactiveExceptionHandler();
@@ -69,6 +78,8 @@ public class SecurityReactConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 
     @Bean
     @RefreshScope
