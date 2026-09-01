@@ -1,7 +1,5 @@
 package com.xcz.commons.security.utils;
 
-import com.xcz.commons.core.exception.auth.NotPermissionException;
-import com.xcz.commons.core.exception.auth.NotRoleException;
 import com.xcz.commons.security.extend.LoginUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -159,26 +157,5 @@ public final class RoleUtils {
         return !CollectionUtils.isEmpty(roles) && roles.contains("admin");
     }
 
-    /**
-     * 校验权限，如果没有权限则抛出异常
-     *
-     * @param permission 权限标识
-     */
-    public static void checkPermission(String permission) {
-        if (!hasPermi(permission)) {
-            throw new NotPermissionException(permission);
-        }
-    }
-
-    /**
-     * 校验角色，如果没有角色则抛出异常
-     *
-     * @param role 角色标识
-     */
-    public static void checkRole(String role) {
-        if (!hasRole(role)) {
-            throw new NotRoleException(role);
-        }
-    }
 
 }

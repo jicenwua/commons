@@ -2,8 +2,6 @@ package com.xcz.commons.security.exception;
 
 import com.xcz.commons.core.exception.InnerAuthException;
 import com.xcz.commons.core.exception.ServiceException;
-import com.xcz.commons.core.exception.auth.NotPermissionException;
-import com.xcz.commons.core.exception.auth.NotRoleException;
 import com.xcz.commons.core.log.RequestLogAttributes;
 import com.xcz.commons.core.utils.StringUtils;
 import com.xcz.commons.core.web.vo.params.AjaxResult;
@@ -28,26 +26,6 @@ public class GlobalReactiveExceptionHandler {
 
     private void recordRequestException(ServerWebExchange exchange, Throwable e) {
         exchange.getAttributes().put(RequestLogAttributes.EXCEPTION, e);
-    }
-
-    @ExceptionHandler(NotPermissionException.class)
-    public ResponseEntity<AjaxResult> handleNotPermissionException(NotPermissionException e, ServerHttpRequest request,
-                                                                   ServerWebExchange exchange) {
-        recordRequestException(exchange, e);
-        String requestURI = request.getPath().value();
-        log.error("请求地址'{}',权限码校验失败'{}'", requestURI, e.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"));
-    }
-
-    @ExceptionHandler(NotRoleException.class)
-    public ResponseEntity<AjaxResult> handleNotRoleException(NotRoleException e, ServerHttpRequest request,
-                                                               ServerWebExchange exchange) {
-        recordRequestException(exchange, e);
-        String requestURI = request.getPath().value();
-        log.error("请求地址'{}',角色权限校验失败'{}'", requestURI, e.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(AjaxResult.error(HttpStatus.FORBIDDEN.value(), "没有访问权限，请联系管理员授权"));
     }
 
     @ExceptionHandler(MethodNotAllowedException.class)
