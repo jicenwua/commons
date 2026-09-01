@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xcz.commons.core.constant.TokenConstants;
-import com.xcz.commons.core.exception.auth.NotPermissionException;
-import com.xcz.commons.core.exception.auth.NotRoleException;
 import com.xcz.commons.core.utils.StringUtils;
 import com.xcz.commons.redis.extend.DatabaseEnum;
 import com.xcz.commons.redis.utils.RedisUtil;
