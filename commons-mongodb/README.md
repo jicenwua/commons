@@ -63,9 +63,12 @@ mongo:
 | `{name}MongoClient` | MongoDB 客户端 |
 | `{name}MongoDatabaseFactory` | 数据库工厂 |
 | `{name}MongoTemplate` | 操作模板 |
-| `{name}MongoTransactionManager` | 事务管理器 |
+| `{name}MongoTransactionManager` | 事务管理器（须显式指定，非默认） |
+| `mongoDBTransactionManager` | 主库事务管理器（使用 `@MongoDBTransactional` 或显式指定） |
 
 例如主库：`primaryMongoTemplate`；分析库：`analyticsMongoTemplate`。
+
+`@Transactional` 默认仍使用 JDBC 的 `transactionManager`；Mongo 事务仅在副本集环境下通过 `@MongoDBTransactional` 按需启用。
 
 ### 副本集模式
 
@@ -113,6 +116,20 @@ private MongoTemplate mongoTemplate;
 private MongoTemplate analyticsMongoTemplate;
 ```
 
+副本集环境下，MongoDB 写操作需要事务时使用 `@MongoDBTransactional`（勿在单机 MongoDB 上使用）：
+
+```java
+import com.xcz.commons.mongodb.transaction.MongoDBTransactional;
+
+@MongoDBTransactional
+public void saveArticleWithTags(Article article, List<Tag> tags) {
+    articleRepository.save(article);
+    tagRepository.saveAll(tags);
+}
+```
+
+纯 MySQL 操作继续使用 Spring 自带的 `@Transactional` 即可，默认走 JDBC 的 `transactionManager`。
+
 配合 Spring Data 的 `MongoRepository` 时，需为不同包指定 `mongoTemplateRef`：
 
 ```java
@@ -137,6 +154,7 @@ public class AnalyticsMongoRepositoryConfig {}
 |----|------|
 | `MongoConfig` | 多数据源自动装配入口 |
 | `MongoDataSourceBeanDefinitionRegistrar` | 动态注册各数据源 Bean |
+| `MongoDBTransactional` | 绑定 `mongoDBTransactionManager` 的便捷注解 |
 | `MongoClientFactory` | 创建 `MongoClient` |
 | `MongoSettingsProperties` | `mongo.*` 顶层配置 |
 | `MongoDataSourceProperties` | 单数据源 `mongo.datasources.<name>.*` 配置 |
@@ -158,6 +176,6 @@ public class AnalyticsMongoRepositoryConfig {}
 1. `hosts` 与 `ports` 列表长度需一致，按索引一一对应
 2. 副本集模式下 `cluster.replica-set` 为必填项
 3. 若同时引入 `spring-boot-starter-data-mongodb`，本模块会接管客户端创建
-4. 跨数据源不支持分布式事务，使用 `@Transactional` 时需指定 `transactionManager`
+4. Mongo 事务管理器 Bean 名为 `mongoDBTransactionManager`，非默认 Primary，不会覆盖 JDBC 事务；跨库操作不支持分布式事务
 
 [← 返回总览](../README.md)

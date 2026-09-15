@@ -14,8 +14,8 @@ public final class MongoBeanNames {
     /** 主数据源默认 MongoTemplate Bean 名 */
     public static final String MONGO_TEMPLATE = "mongoTemplate";
 
-    /** 主数据源默认 MongoTransactionManager Bean 名 */
-    public static final String TRANSACTION_MANAGER = "transactionManager";
+    /** 主数据源 MongoTransactionManager Bean 名（非默认，不与 JDBC transactionManager 冲突） */
+    public static final String TRANSACTION_MANAGER = "mongoDBTransactionManager";
 
     private MongoBeanNames() {
     }

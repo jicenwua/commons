@@ -128,14 +128,11 @@ public class MongoDataSourceBeanDefinitionRegistrar
         }
         registry.registerBeanDefinition(templateBeanName, templateDefinition);
 
-        // MongoTransactionManager：依赖 MongoDatabaseFactory，供 @Transactional 使用
+        // MongoTransactionManager：仅副本集可用，须显式指定 transactionManager，不设为默认 Primary
         RootBeanDefinition transactionManagerDefinition = new RootBeanDefinition(MongoTransactionManager.class);
         transactionManagerDefinition.getConstructorArgumentValues()
                 .addIndexedArgumentValue(0, new RuntimeBeanReference(factoryBeanName));
         transactionManagerDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
-        if (primary) {
-            transactionManagerDefinition.setPrimary(true);
-        }
         registry.registerBeanDefinition(transactionManagerBeanName, transactionManagerDefinition);
 
         // 主数据源额外注册命名别名，供 @Qualifier("primaryMongoTemplate") 使用
@@ -155,7 +152,6 @@ public class MongoDataSourceBeanDefinitionRegistrar
         removeBeanDefinitionIfExists(registry, MongoBeanNames.MONGO_CLIENT);
         removeBeanDefinitionIfExists(registry, MongoBeanNames.MONGO_DATABASE_FACTORY);
         removeBeanDefinitionIfExists(registry, MongoBeanNames.MONGO_TEMPLATE);
-        removeBeanDefinitionIfExists(registry, MongoBeanNames.TRANSACTION_MANAGER);
     }
 
     private void removeBeanDefinitionIfExists(BeanDefinitionRegistry registry, String beanName) {
